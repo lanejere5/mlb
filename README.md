@@ -1,3 +1,3 @@
 # mlb
 
-An interactive dashboard.
+An interactive dashboard!
