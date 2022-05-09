@@ -2,6 +2,8 @@ name: deploy-dashboard
 
 # trigger when commit is pushed to dashboard/
 on:
+  workflow_dispatch
+
   push:
     paths:
       - 'dashboard/*'
