@@ -1,18 +1,35 @@
-import os
-
+"""Main.py"""
+from dash import Dash, html, dcc
+import plotly.express as px
+import pandas as pd
 from flask import Flask
 
-app = Flask(__name__)
+server = Flask(__name__)
+app = Dash(__name__, server=server)
+app.title = 'Dashboard'
 
+# assume you have a "long-form" data frame
+# see https://plotly.com/python/px-arguments/ for more options
+df = pd.DataFrame({
+    "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
+    "Amount": [4, 1, 2, 2, 4, 5],
+    "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
+})
 
-@app.route("/")
-def hello():
-  name = os.environ.get("NAME")
-  return f"Hello {name}!"
+fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
 
+app.layout = html.Div(children=[
+    html.H1(children='Hello Dash'),
 
-if __name__ == "__main__":
-  app.run(debug=True,
-          host="0.0.0.0",
-          port=int(os.environ.get("PORT", 8080)))
+    html.Div(children='''
+        Dash: A web application framework for your data.
+    '''),
 
+    dcc.Graph(
+        id='example-graph',
+        figure=fig
+    )
+])
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
