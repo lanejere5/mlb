@@ -17,7 +17,7 @@ def mlb_data(test=False):
   bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
   blob_id = os.environ.get('MLB-RECORD-BLOB-ID')
   path = os.path.join('gs://', bucket_name, blob_id)
-  df = pd.read_csv(path, encoding='utf-8')
+  df = pd.read_csv(path, index_col='Date', encoding='utf-8')
 
   return df
 
