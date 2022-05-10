@@ -2,11 +2,15 @@
 import os
 import pandas as pd
 from google.cloud import storage
+from dotenv import load_dotenv
 
 
 def mlb_data(test=False):
+
   if test:
     return pd.read_csv('2022-05-10-al-east-records.csv', index_col='Date')
+
+  load_dotenv()
 
   # load data from bucket
   storage_client = storage.Client()
