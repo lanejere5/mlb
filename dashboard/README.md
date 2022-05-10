@@ -1,5 +1,7 @@
 # dashboard
 
+[Click here to see it in action!](https://dashboard-5odpqk6ypq-ue.a.run.app/)
+
 # local dev
 
 This directory contains the dockerfile and source for deploying the dashboard.
