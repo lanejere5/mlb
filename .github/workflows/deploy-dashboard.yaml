@@ -46,5 +46,5 @@ jobs:
           --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/dashboard \
           --platform managed \
           --allow-unauthenticated \
-          --project ${{ secrets.GCP_PROJECT_ID }}
+          --project ${{ secrets.GCP_PROJECT_ID }} \
           --service-account ${{ secrets.DASHBOARD_SA }}
