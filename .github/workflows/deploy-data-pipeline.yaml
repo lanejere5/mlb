@@ -1,0 +1,39 @@
+name: deploy-data-pipeline
+
+# trigger when commit is pushed to data-pipeline/app/
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'data-pipeline/app/*'
+
+jobs:
+  build:
+    name: Data Pipeline Cloud Function Deployment
+    runs-on: ubuntu-latest
+    steps:
+
+      # checkout the repo
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@master
+
+      # configure GCP CLI
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          version: 'latest'
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      # deploy the function
+      - name: Deploy
+        uses: google-github-actions/deploy-cloud-functions@v0
+        with:
+          name: data-pipeline
+          runtime: Python 3.9
+          region: us-east1
+          source_dir: data-pipeline/app/
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_email: ${{ secrets.DATA_PIPELINE_SA }}
