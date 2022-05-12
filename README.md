@@ -1,3 +1,5 @@
 # mlb
 
-An interactive dashboard!
+![Preview](screenshot.png)
+
+
