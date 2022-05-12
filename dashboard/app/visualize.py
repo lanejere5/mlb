@@ -92,11 +92,14 @@ def postseason_race():
   # np.random.shuffle(offset)
   for i, (team, _) in enumerate(teams):
       trace_name = team_names[team]
+      div = division_of_team[team]
       traces[team] = go.Scatter(
           x=df.index,
           y=df[team], #+ offset[i],
           mode='lines',
           visible=team in al_division['al_east'],
+          legendgroup=div,  # this can be any string, not just "group"
+          legendgrouptitle_text=division_long_name[div],
           name=trace_name,
           line_color=team_colors[team]
       )
