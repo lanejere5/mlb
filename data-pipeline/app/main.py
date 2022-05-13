@@ -1,4 +1,5 @@
-"""main.py"""
+# main.py
+"""Entry point for data pipeline service."""
 import os
 from pipeline import Pipeline
 from flask import Flask
