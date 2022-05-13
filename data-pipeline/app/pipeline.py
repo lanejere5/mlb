@@ -25,7 +25,7 @@ def scrape():
   """Scrape 2022 team records from FanGraphs."""
   raw_records = {}
 
-  for team in teams:
+  for team in teams[:2]:
     raw_records[team] = schedule_and_record(2022, team)
     time.sleep(2) # avoid getting blocked
 
@@ -71,7 +71,7 @@ def store(data, today):
   bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
   blob_id = str(today) + '2022-05-10-mlb-records.csv'
   path = os.path.join('gs://', bucket_name, blob_id)
-  data.to_csv(path)
+  data.to_parquet(path)
 
 
 class Pipeline():
@@ -79,7 +79,7 @@ class Pipeline():
     """Run data pipeline."""
     today = date.today()
     raw_records = scrape()
-    data = preprocess(raw_records)
+    data = merge_records(preprocess(raw_records))
     if validate(data):
       store(data, today)
       return 200
