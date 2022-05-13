@@ -76,8 +76,6 @@ def preprocess(raw_records: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
     processed[team]['losses'] = processed[team]['W/L'].apply(lambda x: 1 if x == -1 else 0).cumsum()
   return processed
 
-processed = preprocess(records)
-
 def merge_records(processed_records: Dict[str, pd.DataFrame]) -> pd.DataFrame:
   """Merge records and generate plots.
 
