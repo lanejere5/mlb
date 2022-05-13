@@ -37,7 +37,7 @@ def scrape() -> Dict[str, pd.DataFrame]:
   """
   raw_records = {}
 
-  for team in teams:
+  for team in teams[:2]:
     raw_records[team] = schedule_and_record(2022, team)
     time.sleep(2) # avoid getting blocked
 
@@ -141,7 +141,7 @@ class Pipeline():
     raw_records = scrape()
     preprocessed_records = preprocess(raw_records)
     wins_over_500_df = merge_records(preprocessed_records)
-    if validate(data):
+    if validate(wins_over_500_df):
       store(wins_over_500_df, date.today())
       return 200
     else:
