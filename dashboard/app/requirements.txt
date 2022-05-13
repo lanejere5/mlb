@@ -6,3 +6,4 @@ Flask==2.1.2
 google-cloud-storage==2.3.0
 gcsfs==2022.3.0
 python-dotenv==0.20.0
+pyarrow==8.0.0
