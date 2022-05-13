@@ -172,7 +172,7 @@ def postseason_race() -> go.Figure:
   nl_button = [
       dict(
           method='update',
-          label='American League (AL)',
+          label='National League (NL)',
           visible=True,
           args=[{'visible': [True if league_of_division[division_of_team[x]] == 'nl' else False for x in traces]}]
       )
