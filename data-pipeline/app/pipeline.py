@@ -25,7 +25,7 @@ def scrape():
   """Scrape 2022 team records from FanGraphs."""
   raw_records = {}
 
-  for team in teams[:2]:
+  for team in teams:
     raw_records[team] = schedule_and_record(2022, team)
     time.sleep(2) # avoid getting blocked
 
@@ -69,7 +69,7 @@ def store(data, today):
   storage_client = storage.Client()
 
   bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
-  blob_id = str(today) + '2022-05-10-mlb-records.csv'
+  blob_id = str(today) + '-mlb-records.parquet'
   path = os.path.join('gs://', bucket_name, blob_id)
   data.to_parquet(path)
 
