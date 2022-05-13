@@ -1,3 +1,5 @@
-# mlb
+# An interactive dashboard for the MLB postseason race
 
-An interactive dashboard!
+![Preview](screenshot.png)
+
+
