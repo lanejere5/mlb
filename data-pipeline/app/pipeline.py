@@ -37,7 +37,7 @@ def scrape() -> Dict[str, pd.DataFrame]:
   """
   raw_records = {}
 
-  for team in teams[:2]:
+  for team in teams:
     raw_records[team] = schedule_and_record(2022, team)
     time.sleep(2) # avoid getting blocked
 
