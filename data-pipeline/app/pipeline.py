@@ -63,7 +63,7 @@ def preprocess(raw_records: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
     Dictionary of processed DataFrames with team abbreviations as keys.
   """
   processed = {}
-  for team, data in records.items():
+  for team, data in raw_records.items():
     # select relevant columns
     processed[team] = data.loc[~data['R'].isna(), ['Date', 'Home_Away', 'Opp', 'R', 'RA', 'Rank']].copy()
     # convert date strings to timestamp
