@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Data Pipeline Cloud Function Deployment
+    name: Data Pipeline Cloud Run Deployment
     runs-on: ubuntu-latest
     steps:
 
@@ -19,19 +19,34 @@ jobs:
         uses: actions/checkout@master
 
       # configure GCP CLI
-      - name: Authenticate
-        id: auth
-        uses: google-github-actions/auth@v0
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v0
         with:
-          credentials_json: ${{ secrets.GH_ACTION_JSON }}
+          version: 'latest'
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
 
-      # deploy the function
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker
+
+      - name: Build
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/data-pipeline:latest data-pipeline/app/
+
+      - name: Push
+        run: |
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/data-pipeline:latest
+
       - name: Deploy
-        uses: google-github-actions/deploy-cloud-functions@v0
-        with:
-          name: data-pipeline
-          runtime: Python 3.9
-          region: us-east1
-          source_dir: data-pipeline/app/
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_email: ${{ secrets.DATA_PIPELINE_SA }}
+        run: |
+          gcloud run deploy data-pipeline \
+          --region us-east1 \
+          --cpu 1 \
+          --memory 512MB \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/data-pipeline \
+          --platform managed \
+          --no-allow-unauthenticated \
+          --project ${{ secrets.GCP_PROJECT_ID }} \
+          --service-account ${{ secrets.DATA_PIPELINE_SA }}
