@@ -44,7 +44,7 @@ jobs:
           gcloud run deploy data-pipeline \
           --region us-east1 \
           --cpu 1 \
-          --memory 512MB \
+          --memory 512M \
           --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/data-pipeline \
           --platform managed \
           --no-allow-unauthenticated \
