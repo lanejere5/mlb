@@ -155,7 +155,7 @@ def postseason_race() -> go.Figure:
     A plotly figure.
   """
   # load records
-  records = load.records(test=True)
+  records = load.records(test=False)
 
   # sort teams by wins over .500
   sorted_teams = sort_teams_by_record(records)
