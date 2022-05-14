@@ -1,0 +1,126 @@
+{
+  "divisions": {
+    "al_east": [
+      "NYY",
+      "TBR",
+      "TOR",
+      "BAL",
+      "BOS"
+    ],
+    "al_central": [
+      "CHW",
+      "CLE",
+      "DET",
+      "KCR",
+      "MIN"
+    ],
+    "al_west": [
+      "LAA",
+      "OAK",
+      "SEA",
+      "TEX",
+      "HOU"
+    ],
+    "nl_east": [
+      "ATL",
+      "NYM",
+      "PHI",
+      "MIA",
+      "WSN"
+    ],
+    "nl_central": [
+      "CHC",
+      "MIL",
+      "STL",
+      "PIT",
+      "CIN"
+    ],
+    "nl_west": [
+      "LAD",
+      "COL",
+      "ARI",
+      "SFG",
+      "SDP"
+    ]
+  },
+  "league_of_division": {
+    "al_east": "al",
+    "al_central": "al",
+    "al_west": "al",
+    "nl_east": "nl",
+    "nl_central": "nl",
+    "nl_west": "nl"
+  },
+  "division_long_name": {
+    "al_east": "AL East",
+    "al_central": "AL Central",
+    "al_west": "AL West",
+    "nl_east": "NL East",
+    "nl_central": "NL Central",
+    "nl_west": "NL West"
+  },
+  "team_names": {
+    "NYY": "New York Yankees",
+    "TBR": "Tampa Bay Rays",
+    "TOR": "Toronto Blue Jays",
+    "BAL": "Baltimore Orioles",
+    "BOS": "Boston Red Sox",
+    "CHW": "Chicago White Sox",
+    "CLE": "Cleveland Guardians",
+    "DET": "Detriot Tigers",
+    "KCR": "Kansas City Royals",
+    "MIN": "Minnesota Twins",
+    "LAA": "Los Angeles Angels",
+    "OAK": "Oakland Athletics",
+    "SEA": "Seattle Mariners",
+    "TEX": "Texas Rangers",
+    "HOU": "Houston Astros",
+    "ATL": "Atlanta Braves",
+    "NYM": "New York Mets",
+    "PHI": "Philadelphia Phillies",
+    "MIA": "Miami Marlins",
+    "WSN": "Washington Nationals",
+    "CHC": "Chicago Cubs",
+    "MIL": "Milwaukee Brewers",
+    "STL": "St. Louis Cardinals",
+    "PIT": "Pittsburgh Pirates",
+    "CIN": "Cincinnati Reds",
+    "LAD": "Los Angeles Dodgers",
+    "COL": "Colorado Rockies",
+    "ARI": "Arizona Diamondbacks",
+    "SFG": "San Francisco Giants",
+    "SDP": "San Diego Padres"
+  },
+  "team_colors": {
+    "NYY": "#C4CED3",
+    "TBR": "#092C5C",
+    "TOR": "#80b0d8",
+    "BAL": "#DF4601",
+    "BOS": "#BD3039",
+    "CHW": "#27251F",
+    "CLE": "#E31937",
+    "DET": "#0C2340",
+    "KCR": "#004687",
+    "MIN": "#B9975B",
+    "LAA": "#862633",
+    "OAK": "#003831",
+    "SEA": "#005C5C",
+    "TEX": "#003278",
+    "HOU": "#EB6E1F",
+    "ATL": "#CE1141",
+    "NYM": "#FF5910",
+    "PHI": "#E81828",
+    "MIA": "#00A3E0",
+    "WSN": "#AB0003",
+    "CHC": "#0E3386",
+    "MIL": "#ffc52f",
+    "STL": "#FEDB00",
+    "PIT": "#27251F",
+    "CIN": "#C6011F",
+    "LAD": "#005A9C",
+    "COL": "#33006F",
+    "ARI": "#E3D4AD",
+    "SFG": "#27251F",
+    "SDP": "#2F241D"
+  }
+}

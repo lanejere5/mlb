@@ -1,242 +1,194 @@
 # visualize.py
 """Generate plotly figure visualizing the postseason race."""
-import numpy as np
 from datetime import datetime
 from collections import OrderedDict
+from typing import List, Tuple
 
 import plotly.graph_objects as go
-from pandas import date_range, to_datetime, Timestamp
 
-from load import mlb_data
+import load
 
 
-divisions = {
-  'al_east': ['NYY', 'TBR', 'TOR', 'BAL', 'BOS'],
-  'al_central': ['CHW', 'CLE', 'DET', 'KCR', 'MIN'],
-  'al_west': ['LAA', 'OAK', 'SEA', 'TEX', 'HOU'],
-  'nl_east': ['ATL', 'NYM', 'PHI', 'MIA', 'WSN'],
-  'nl_central': ['CHC', 'MIL', 'STL', 'PIT', 'CIN'],
-  'nl_west': ['LAD', 'COL', 'ARI', 'SFG', 'SDP']
-}
+teams_data = load.teams()
 
-division_of_team = {team: div for div, teams in divisions.items() for team in teams}
 
-league_of_division = {
-  'al_east': 'al',
-  'al_central': 'al',
-  'al_west': 'al',
-  'nl_east': 'nl',
-  'nl_central': 'nl',
-  'nl_west': 'nl'
-}
+def sort_teams_by_record(records) -> List[Tuple[str, int]]:
+  """Sort teams in descending order by current wins over 500.
 
-division_long_name = {
-  'al_east': 'AL East',
-  'al_central': 'AL Central',
-  'al_west': 'AL West',
-  'nl_east': 'NL East',
-  'nl_central': 'NL Central',
-  'nl_west': 'NL West'
-}
+  Args:
+    records: pd.DataFrame.
 
-team_names = {
-  'NYY': 'New York Yankees',
-  'TBR': 'Tampa Bay Rays',
-  'TOR': 'Toronto Blue Jays',
-  'BAL': 'Baltimore Orioles',
-  'BOS': 'Boston Red Sox',
-  'CHW': 'Chicago White Sox',
-  'CLE': 'Cleveland Guardians',
-  'DET': 'Detriot Tigers',
-  'KCR': 'Kansas City Royals',
-  'MIN': 'Minnesota Twins',
-  'LAA': 'Los Angeles Angels',
-  'OAK': 'Oakland Athletics',
-  'SEA': 'Seattle Mariners',
-  'TEX': 'Texas Rangers',
-  'HOU': 'Houston Astros',
-  'ATL': 'Atlanta Braves',
-  'NYM': 'New York Mets',
-  'PHI': 'Philadelphia Phillies',
-  'MIA': 'Miami Marlins',
-  'WSN': 'Washington Nationals',
-  'CHC': 'Chicago Cubs',
-  'MIL': 'Milwaukee Brewers',
-  'STL': 'St. Louis Cardinals',
-  'PIT': 'Pittsburgh Pirates',
-  'CIN': 'Cincinnati Reds',
-  'LAD': 'Los Angeles Dodgers',
-  'COL': 'Colorado Rockies',
-  'ARI': 'Arizona Diamondbacks',
-  'SFG': 'San Francisco Giants',
-  'SDP': 'San Diego Padres'
-}
+  Returns:
+    List of tuples (x, y) where x is the team abbreviation and y is 
+    the teams current wins over 500.
+  """
+  sorted_teams = [(team, records[team].iloc[-1]) for team in records.columns]
+  sorted_teams.sort(key=lambda x: x[1], reverse=True)
+  return sorted_teams
 
-# most of these color codes came from 
-# https://teamcolorcodes.com/mlb-color-codes/
-team_colors = {
-  'NYY': '#C4CED3',
-  'TBR': '#092C5C',
-  'TOR': '#80b0d8',
-  'BAL': '#DF4601',
-  'BOS': '#BD3039',
-  'CHW': '#27251F',
-  'CLE': '#E31937',
-  'DET': '#0C2340',
-  'KCR': '#004687',
-  'MIN': '#B9975B',
-  'LAA': '#862633',
-  'OAK': '#003831',
-  'SEA': '#005C5C',
-  'TEX': '#003278',
-  'HOU': '#EB6E1F',
-  'ATL': '#CE1141',
-  'NYM': '#FF5910',
-  'PHI': '#E81828',
-  'MIA': '#00A3E0',
-  'WSN': '#AB0003',
-  'CHC': '#0E3386',
-  'MIL': '#ffc52f',
-  'STL': '#FEDB00',
-  'PIT': '#27251F',
-  'CIN': '#C6011F',
-  'LAD': '#005A9C',
-  'COL': '#33006F',
-  'ARI': '#E3D4AD',
-  'SFG': '#27251F',
-  'SDP': '#2F241D'
-}
+def generate_traces(sorted_teams, records):
+  """Generate traces for the plot."""
+  traces = OrderedDict()
 
-season = date_range(start=datetime(2022, 4, 7), end=datetime(2022, 10, 2))
-played_season = to_datetime(date_range(start=datetime(2022, 4, 7), end=Timestamp.today()))
+  # add line plots of team records
+  # teams are added in descending order so they will 
+  # appear according to their rank in the legend
+  for i, (team, _) in enumerate(sorted_teams):
+    trace_name = teams_data['team_names'][team]
+    div = teams_data['division_of_team'][team]
+    traces[team] = go.Scatter(
+      x=records.index,
+      y=records[team],
+      mode='lines',
+      visible=team in teams_data['divisions']['al_east'],
+      legendgroup=div,
+      legendgrouptitle_text=teams_data['division_long_name'][div],
+      name=trace_name,
+      line_color=teams_data['team_colors'][team]
+    )
+  return traces
 
-def postseason_race() -> go.Figure:
-  """Generate plotly figure visualizing the postseason race."""
-  df = mlb_data(test=False)
-
-  # sort teams by wins over .500
-  teams = [(team, df[team].iloc[-1]) for team in df.columns]
-  teams.sort(key=lambda x: x[1], reverse=True)
-  
+def get_division_leaders(sorted_teams: List[Tuple[str, int]]):
   # division leaders
   division_leaders = {}
-  for team, wins_over_500 in teams:
-      div = division_of_team[team]
+  for team, wins_over_500 in sorted_teams:
+      div = teams_data['division_of_team'][team]
       if div not in division_leaders.keys():
         division_leaders[div] = [(team, wins_over_500)]
       elif wins_over_500 == division_leaders[div][0][1]: # tie for first in division
         division_leaders[div].append((team, wins_over_500))
 
-  leaders = [x[0] for div, v in division_leaders.items() for x in v]
+  return [x[0] for div, v in division_leaders.items() for x in v]
 
-  traces = OrderedDict()
+def generate_buttons(traces: OrderedDict, leaders: List) -> List:
+  """Generate buttons for dropdown menu.
 
-  # add line plots of team records
-  # offset = np.linspace(-0.1, 0.1, 15)
-  # np.random.shuffle(offset)
-  for i, (team, _) in enumerate(teams):
-      trace_name = team_names[team]
-      div = division_of_team[team]
-      traces[team] = go.Scatter(
-          x=df.index,
-          y=df[team], #+ offset[i],
-          mode='lines',
-          visible=team in divisions['al_east'],
-          legendgroup=div,  # this can be any string, not just "group"
-          legendgrouptitle_text=division_long_name[div],
-          name=trace_name,
-          line_color=team_colors[team]
-      )
+  Returns:
+    List of buttons, in the order they appear in the menu.
+  """
+  buttons = []
 
-  # # add markers for division leaders
-  # for div in al_division.keys():
-  #     traces[div] = go.Scatter(
-  #         x=[df.index[-1]],
-  #         y=[df[leaders[div]].iloc[-1]],
-  #         mode='markers',
-  #         visible=True,
-  #         name=division_long_name[div] + " Leader"
-  #     )
+  # american league buttons
 
-  # al button
-  al_button = [
-      dict(
-          method='update',
-          label='American League (AL)',
-          visible=True,
-          args=[{'visible': [True if league_of_division[division_of_team[x]] == 'al' else False for x in traces]}]
-      )
+  # al division buttons
+  buttons += [
+    dict(
+      method='update',
+      label=teams_data['division_long_name'][div],
+      visible=True,
+      args=[{'visible': [True if x in teams_data['divisions'][div] else False for x in traces] }]
+    )
+    for div in teams_data['divisions'] if teams_data['league_of_division'][div] == 'al'
   ]
 
-  # nl button
-  nl_button = [
-      dict(
-          method='update',
-          label='National League (NL)',
-          visible=True,
-          args=[{'visible': [True if league_of_division[division_of_team[x]] == 'nl' else False for x in traces]}]
-      )
+  # al wildcard button
+  al_wildcard_flags = [
+    True if x not in leaders and teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'al' else False for x in traces
   ]
-
-  # division buttons
-  al_division_buttons = [
-      dict(
-          method='update',
-          label=division_long_name[div],
-          visible=True,
-          args=[{'visible': [True if x in divisions[div] else False for x in traces] }]
-      )
-      for div in divisions if league_of_division[div] == 'al'
-  ]
-  nl_division_buttons = [
-      dict(
-          method='update',
-          label=division_long_name[div],
-          visible=True,
-          args=[{'visible': [True if x in divisions[div] else False for x in traces] }]
-      )
-      for div in divisions if league_of_division[div] == 'nl'
-  ]
-
-  # wildcard button
-  al_wildcard_button = [dict(
+  buttons.append(
+    dict(
       method='restyle',
       label='AL Wildcard',
       visible=True,
-      args=[{'visible': [True if x not in leaders and league_of_division[division_of_team[x]] == 'al' else False for x in traces]}]
-  )]
-  nl_wildcard_button = [dict(
+      args=[{'visible': al_wildcard_flags}]
+    )
+  )
+
+  # al league button
+  al_flags = [
+    True if teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'al' else False for x in traces
+  ]
+  buttons.append(
+    dict(
+      method='update',
+      label='American League (AL)',
+      visible=True,
+      args=[{'visible': al_flags}]
+    )
+  )
+
+  # national league buttons
+
+  # nl division buttons
+  buttons += [
+    dict(
+      method='update',
+      label=teams_data['division_long_name'][div],
+      visible=True,
+      args=[{'visible': [True if x in teams_data['divisions'][div] else False for x in traces] }]
+    )
+    for div in teams_data['divisions'] if teams_data['league_of_division'][div] == 'nl'
+  ]
+
+  # nl wildcard button
+  nl_wildcard_flags = [
+    [True if x not in leaders and teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'nl' else False for x in traces]
+  ]
+  buttons.append(
+    dict(
       method='restyle',
       label='NL Wildcard',
       visible=True,
-      args=[{'visible': [True if x not in leaders and league_of_division[division_of_team[x]] == 'nl' else False for x in traces]}]
-  )]
+      args=[{'visible': nl_wildcard_flags}]
+    )
+  )
+
+  # nl league button
+  nl_flags = [
+    True if teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'nl' else False for x in traces
+  ]
+  buttons.append(
+    dict(
+      method='update',
+      label='National League (NL)',
+      visible=True,
+      args=[{'visible': nl_flags}]
+    )
+  )
+
+  return buttons
+
+def postseason_race() -> go.Figure:
+  """Generate plotly figure visualizing the 2022 postseason race.
+
+  Returns:
+    A plotly figure.
+  """
+  # load records
+  records = load.records(test=True)
+
+  # sort teams by wins over .500
+  sorted_teams = sort_teams_by_record(records)
+  leaders = get_division_leaders(sorted_teams)
+  traces = generate_traces(sorted_teams, records)
+  buttons = generate_buttons(traces, leaders)
 
   # create the layout 
   layout = go.Layout(
-      updatemenus=[
-          dict(
-              type='dropdown',
-              direction='down',
-              x=1,
-              y=1.15,
-              showactive=True,
-              buttons=al_division_buttons + al_wildcard_button + al_button + nl_division_buttons + nl_wildcard_button + nl_button
-          )
-      ],
-      title=dict(
-          text=f'{2022} MLB Postseason Race',
-          x=0.1
-      ),
-      yaxis_title='Wins over .500',
-      showlegend=True,
-      height=700,
-      margin={'r': 300}
+    updatemenus=[
+      dict(
+        type='dropdown',
+        direction='down',
+        x=1,
+        y=1.15,
+        showactive=True,
+        buttons=buttons
+      )
+    ],
+    title=dict(
+      text=f'{2022} MLB Postseason Race',
+      x=0.1
+    ),
+    yaxis_title='Wins over .500',
+    showlegend=True,
+    height=700,
+    margin={'r': 300}
   )
 
   fig = go.Figure(data=list(traces.values()), layout=layout)
 
-  fig.update_xaxes(range=[season.min(), season.max()])
-  fig.update_yaxes(range=[df.min().min() - 5, df.max().max() + 5])
+  # fix the axis ranges so that selecting buttons doesn't shift them
+  fig.update_xaxes(range=[datetime(2022, 4, 7), datetime(2022, 10, 2)])
+  fig.update_yaxes(range=[records.min().min() - 2, records.max().max() + 2])
 
   return fig

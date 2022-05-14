@@ -1,16 +1,37 @@
 # load.py
 """Load data from local file or gcloud bucket."""
 import os
+import json
+from typing import Dict
 from datetime import date, timedelta
 from pandas import read_parquet
 from google.cloud import storage
 from dotenv import load_dotenv
 
 
-def mlb_data(test: bool=False):
-  """Load data.
+def teams() -> Dict:
+  """Load team data for 2022 season from json.
 
-  Loads data for plotting.
+  Returns:
+    Dictionary loaded from 2022-teams.json.
+  """
+  with open('2022-teams.json') as f:
+    teams_data = json.load(f)
+
+  teams_data['division_of_team'] = {
+    team: div for div, teams in teams_data['divisions'].items() for team in teams
+  }
+  # teams_data['league_of_team'] = {
+  #   team: teams_data['league_of_division'][teams_data['division_of_team'][team]] for team in 
+  # }
+ 
+  return teams_data
+
+
+def records(test: bool=False):
+  """Load team records.
+
+  Loads team records for plotting.
 
   Args:
     test: if true data is loaded from local file. Otherwise it is
