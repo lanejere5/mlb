@@ -122,7 +122,7 @@ def generate_buttons(traces: OrderedDict, leaders: List) -> List:
 
   # nl wildcard button
   nl_wildcard_flags = [
-    [True if x not in leaders and teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'nl' else False for x in traces]
+    True if x not in leaders and teams_data['league_of_division'][teams_data['division_of_team'][x]] == 'nl' else False for x in traces
   ]
   buttons.append(
     dict(
