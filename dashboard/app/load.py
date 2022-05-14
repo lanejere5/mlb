@@ -1,7 +1,7 @@
 # load.py
 """Load data from local file or gcloud bucket."""
 import os
-from datetime import date
+from datetime import date, timedelta
 from pandas import read_parquet
 from google.cloud import storage
 from dotenv import load_dotenv
@@ -26,9 +26,17 @@ def mlb_data(test: bool=False):
 
   load_dotenv()
 
-  # load data from bucket
   storage_client = storage.Client()
+
   bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
+  bucket = storage_client.bucket(bucket_name)
+
   blob_id = str(date.today()) + '-mlb-records.parquet'
-  path = os.path.join('gs://', bucket_name, blob_id)
+  
+  if storage_client.Blob(bucket=bucket, name=blob_id).exists(storage_client):
+    path = os.path.join('gs://', bucket_name, blob_id)
+  else:
+    blob_id = str(date.today() - timedelta(days=1)) + '-mlb-records.parquet'
+    path = os.path.join('gs://', bucket_name, blob_id)
+
   return read_parquet(path)
