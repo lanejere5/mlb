@@ -33,7 +33,7 @@ def mlb_data(test: bool=False):
 
   blob_id = str(date.today()) + '-mlb-records.parquet'
   
-  if storage_client.Blob(bucket=bucket, name=blob_id).exists(storage_client):
+  if storage.Blob(bucket=bucket, name=blob_id).exists(storage_client):
     path = os.path.join('gs://', bucket_name, blob_id)
   else:
     blob_id = str(date.today() - timedelta(days=1)) + '-mlb-records.parquet'
