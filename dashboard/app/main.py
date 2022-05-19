@@ -5,7 +5,7 @@ from flask import Flask
 from visualize import postseason_race
 
 description = '''
-  Created by [Jeremy Lane](https://github.com/lanej5). [View source on github](https://github.com/lanej5/mlb).    
+  Created by [Jeremy Lane](https://github.com/lanej5). [View source on github](https://github.com/lanej5/mlb). Data is updated daily around 10AM ET.   
 '''
 
 server = Flask(__name__)
