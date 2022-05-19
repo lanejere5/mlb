@@ -175,7 +175,7 @@ def store_dashboard_data(dashboard_data: Dict) -> None:
   storage_client = storage.Client()
   bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
   blob = bucket.blob(str(date.today()) + '-dashboard-data.json')
-  blob.upload_from_string(dashboard_data)
+  blob.upload_from_string(json.dumps(dashboard_data))
 
 
 class Pipeline():
