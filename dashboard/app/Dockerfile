@@ -1,5 +1,5 @@
 # stage 1
-FROM python:3.10-slim as install-requirements
+FROM python:3.10-alpine as install-requirements
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
