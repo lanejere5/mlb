@@ -1,10 +1,16 @@
 # pipeline.py
 """Process game data.
 
-This module defines a sequence of functions that are applied
-to the game data scraped from FanGraphs.
+Defines a Pipeline class that implements the following
+sequence of operations.
+
+1. Scrape game results from FanGraphs
+2. Process game results for plotting
+3. Format data as json
+4. Save to a google cloud storage bucket
 """
 import time
+import json
 import os
 from calendar import month_abbr
 from datetime import datetime, date
@@ -102,13 +108,48 @@ def merge_records(processed_records: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     wins_over_500[team] = wins_over_500[team].cumsum()
     # merge to dataframe
     wins_over_500_df = pd.merge(
-        wins_over_500_df,
-        wins_over_500, 
-        how='outer',
-        on='Date'
+      wins_over_500_df,
+      wins_over_500, 
+      how='outer',
+      on='Date'
     ).ffill().fillna(0)
     wins_over_500_df = wins_over_500_df.set_index('Date')
   return wins_over_500_df
+
+def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records: pd.DataFrame) -> Dict:
+  """Load dashboard data into dictionary format."""
+  # load season specific team data from file
+  with open('season_data_2022.json', 'r') as f:
+    season_data_2022 = json.load(f)
+
+  name = season_data_2022['name']
+  league = season_data_2022['league']
+  div = season_data_2022['div']
+  color = season_data_2022['color']
+
+  # combine season data, team records, and other information
+  # into a dict for the dashboard
+  teams = {}
+  for team, record in preprocessed_records.items():
+    teams[team] = {
+      'name': name[team],
+      'league': league[team],
+      'div': div[team],
+      'color': color[team],
+      'record': wins_over_500_df[team].to_list(),
+      'wins': record['wins'].iloc[-1],
+      'losses': record['losses'].iloc[-1],
+      'rank': record['Rank'].iloc[-1]
+    }
+
+    # package with other metadata
+    data = {
+      'teams': teams,
+      'created': str(date.today()),
+      'season': 2022
+    }
+
+    return data
 
 def validate(data: pd.DataFrame) -> bool:
   """Validate the dataframe.
@@ -118,15 +159,23 @@ def validate(data: pd.DataFrame) -> bool:
   """
   return True
 
-def store(data: pd.DataFrame, today: pd.Timestamp) -> None:
-  """Put data in bucket."""
+def store_wins_over_500(wins_over_500_df: pd.DataFrame) -> None:
+  """Put wins over 500 dataframe in bucket."""
   load_dotenv()
   storage_client = storage.Client()
 
   bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
-  blob_id = str(today) + '-mlb-records.parquet'
+  blob_id = str(date.today()) + '-wins-over-500.parquet'
   path = os.path.join('gs://', bucket_name, blob_id)
-  data.to_parquet(path)
+  wins_over_500_df.to_parquet(path)
+
+def store_dashboard_data(dashboard_data: Dict) -> None:
+  """Put dashboard data in bucket."""
+  load_dotenv()
+  storage_client = storage.Client()
+  bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
+  blob = bucket.blob(str(date.today()) + '-dashboard-data.json')
+  blob.upload_from_string(dashboard_data)
 
 
 class Pipeline():
@@ -135,14 +184,15 @@ class Pipeline():
   This class simply provides the run() method that invokes
   the data pipeline.
   """
-
   def run(self) -> int:
     """Run data pipeline."""
     raw_records = scrape()
     preprocessed_records = preprocess(raw_records)
     wins_over_500_df = merge_records(preprocessed_records)
-    if validate(wins_over_500_df):
-      store(wins_over_500_df, date.today())
+    dashboard_data = prepare_dashboard_data(wins_over_500_df, preprocessed_records)
+    if validate(dashboard_data):
+      store_wins_over_500(wins_over_500_df)
+      store_dashboard_data(dashboard_data)
       return 200
     else:
       return 400

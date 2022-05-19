@@ -1,5 +1,12 @@
 # main.py
-"""Entry point for data pipeline service."""
+"""Entry point for data pipeline service.
+
+This service implements a lightweight data
+pipeline that scrapes, processes, and saves
+data for the dashboard.
+
+This process is invoked every morning.
+"""
 import os
 from pipeline import Pipeline
 from flask import Flask
@@ -7,7 +14,7 @@ from flask import Flask
 app = Flask(__name__)
 
 
-@app.route("/", methods=['GET'])
+@app.route("/", methods=['GET', 'POST'])
 def index():
   """Run the pipeline."""
   pipeline = Pipeline()
