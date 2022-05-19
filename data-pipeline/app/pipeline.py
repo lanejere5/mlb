@@ -33,8 +33,6 @@ divisions = {
 
 teams = [team for div, teams in divisions.items() for team in teams]
 
-months = {abbr: i + 1 for i, abbr in enumerate(month_abbr[1:])}
-
 def scrape() -> Dict[str, pd.DataFrame]:
   """Scrape 2022 team records from FanGraphs.
 
@@ -68,6 +66,7 @@ def preprocess(raw_records: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
   Returns:
     Dictionary of processed DataFrames with team abbreviations as keys.
   """
+  months = {abbr: i + 1 for i, abbr in enumerate(month_abbr[1:])}
   processed = {}
   for team, data in raw_records.items():
     # select relevant columns
@@ -142,14 +141,14 @@ def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records:
       'rank': int(record['Rank'].iloc[-1])
     }
 
-    # package with other metadata
-    data = {
-      'teams': teams,
-      'created': str(date.today()),
-      'season': 2022
-    }
+  # package with other metadata.
+  data = {
+    'teams': teams,
+    'created': str(date.today()),
+    'season': 2022
+  }
 
-    return data
+  return data
 
 def validate(data: pd.DataFrame) -> bool:
   """Validate the dataframe.
