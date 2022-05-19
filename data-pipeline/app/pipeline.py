@@ -136,10 +136,10 @@ def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records:
       'league': league[team],
       'div': div[team],
       'color': color[team],
-      'record': [int(x) for x in wins_over_500_df[team].to_list()],
-      'wins': record['wins'].iloc[-1],
-      'losses': record['losses'].iloc[-1],
-      'rank': record['Rank'].iloc[-1]
+      'record': wins_over_500_df[team].to_list(),
+      'wins': int(record['wins'].iloc[-1]), # need python types for json serialization
+      'losses': int(record['losses'].iloc[-1]),
+      'rank': int(record['Rank'].iloc[-1])
     }
 
     # package with other metadata
