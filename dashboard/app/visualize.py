@@ -20,12 +20,14 @@ def generate_traces(teams: Dict) -> OrderedDict[go.Scatter]:
   """
   traces = OrderedDict()
 
+  dates = [datetime(2022, 4, 7) + timedelta(days=i) for i in range(len(teams['TOR']['record']))]
+
   # add line plots of team records
   # teams are added in descending order so they will 
   # appear according to their rank in the legend
   for team, data in sorted(teams.items(), key=lambda x: x[1]['rank']):
     trace_name = data['name'] + ' (' + str(data['wins']) + '-' + str(data['losses']) + ')'
-    dates = [datetime(2022, 4, 7) + timedelta(days=i) for i in range(len(data['record']))]
+    
     traces[team] = go.Scatter(
       x=dates,
       y=data['record'],
