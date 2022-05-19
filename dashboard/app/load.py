@@ -1,24 +1,23 @@
 # load.py
-"""Load data from local file or gcloud bucket."""
+"""Load dashboard data from local file or gcloud bucket."""
 import os
 import json
 from datetime import date, timedelta
 from google.cloud import storage
 from dotenv import load_dotenv
+from typing import Dict
 
 
-def dashboard_data(test: bool=False):
+def dashboard_data(test: bool=False) -> Dict:
   """Load team records.
 
   Loads team records for plotting.
 
   Args:
-    test: if true data is loaded from local file. Otherwise it is
-          loaded from a gcloud storage bucket.
+    test: if false data is loaded from gcloud storage bucket.
 
   Returns:
-    Pandas DataFrame whose columns are the wins over 500 plots for
-    each team.
+    Dictionary of dashboard data. 
   """
   if test:
     with open('test-dashboard-data.json', 'r') as f:

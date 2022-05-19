@@ -9,8 +9,15 @@ import plotly.graph_objects as go
 import load
 
 
-def generate_traces(teams):
-  """Generate traces for the plot."""
+def generate_traces(teams: Dict) -> OrderedDict[go.Scatter]:
+  """Generate traces for the plot.
+
+  Args:
+    teams: Team data.
+
+  Returns:
+    OrderedDict of plotly Scatter objects.
+  """
   traces = OrderedDict()
 
   # add line plots of team records
@@ -31,8 +38,12 @@ def generate_traces(teams):
     )
   return traces
 
-def generate_buttons(traces: OrderedDict, teams: Dict) -> List:
+def generate_buttons(traces: OrderedDict[go.Scatter], teams: Dict) -> List:
   """Generate buttons for dropdown menu.
+
+  Args:
+    traces: Traces to be plotted.
+    teams: Team data.
 
   Returns:
     List of buttons, in the order they appear in the menu.
