@@ -1,3 +1,3 @@
-# ELO ratings
+# modelling
 
-In this folder I'm implementing an ELO ratings model to forecast game results.
+In this folder I'm exploring various modelling approaches.
