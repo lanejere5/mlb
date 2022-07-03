@@ -3,4 +3,4 @@ gcsfs==2022.3.0
 python-dotenv==0.20.0
 gunicorn==20.1.0
 Flask==2.1.2
-numpy==
+numpy==1.23.0

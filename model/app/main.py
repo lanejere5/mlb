@@ -2,26 +2,28 @@
 """
 This service does two things:
 
-1. Use results from played games to update model weights.
+train: Use results from played games to update model weights.
 
-2. Generates a forecast of wins over 500 for each team by
-simulating the schedule for upcoming games.
+forecast: generates a forecast of game results.
 """
 import os
 from dotenv import load_dotenv
-from flask import Flask, request
-from model import Forecast
+from flask import Flask, request, jsonify
+
+from model import Game
+from forecast import Forecaster
 from elo import ELO
+
 
 app = Flask(__name__)
 
 load_dotenv()
 
-@app.route("/", methods=['GET'])
-def index():
-  """Generate forecast.
+@app.route("/train", methods=['POST'])
+def train():
+  """Train the model.
 
-  Expects the request to contain three lists:
+  Expects the request body to contain two lists (in JSON format):
 
   games: a list of games played, where each game
     is represented as a dict with keys such as
@@ -29,12 +31,6 @@ def index():
 
   results: a list of 0/1 corresponding to the outcome
     of the games.
-
-  schedule: a second list of games yet to be played,
-    in chronological order.
-
-  The response contains a list of probabilities that
-  the home team won each game in the schedule.
   """
   # unpack request data
   data = request.get_json()
@@ -42,19 +38,44 @@ def index():
   # initialize the model
   model_name = os.environ.get('MODEL-NAME')
   if model_name == 'elo':
-    forecasting_model = ELO()
+    m = ELO()
 
   # train and save model parameters
-  forecasting_model.train(data.games, data.results)
-  forecasting_model.save_parameters()
+  m.train(
+    [Game(**g) for g in data['games']],
+    data['results']
+  )
+  m.save_parameters()
+
+  return
+
+@app.route("/forecast", methods=['POST'])
+def forecast():
+  """Generate forecast.
+
+  Expects the request to contain one list:
+
+  schedule: a list of games yet to be played,
+    in chronological order, where each game
+    is represented as a dict with keys such as
+    'home' and 'visitor'.
+
+  The response contains a list of probabilities that
+  the home team won each game in the schedule. The
+  order of the probabilities is the same as the order
+  of the schedule.
+  """
+  # unpack request data
+  data = request.get_json()
 
   # generate forecast
-  forecast = Forecast(forecasting_model)
-  forecast.forecast(data.schedule)
+  forecaster = Forecaster(os.environ.get('MODEL-NAME'))
+  f = forecaster.forecast(
+    [Game(**g) for g in data['schedule']]
+  )
  
   # package forecast and return 
-
-  return 
+  return jsonify({'forecast': f})
 
 if __name__ == "__main__":
   app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

@@ -1,7 +1,6 @@
 # elo.py
 """Simple ELO model."""
-from math import exp, log
-
+import os
 from model import Model, Game
 from utils import sigmoid
 
@@ -9,28 +8,17 @@ from utils import sigmoid
 class ELO(Model):
   """Simple Elo Model.
 
-  Logistic regression model for paired comparison
-  of teams.
+  Logistic regression model for paired comparison of teams.
 
-  Teams are effectively represented as one-hot vectors.
-  The linear coefficient represents its Elo rating (up to
-  scalar).
-
-  The coefficient b represents log-odds of home advantage.
-
-  The coefficient k is the learning rate.
-
-  step() implements a single step of SGD.
+  Model Parameters:
+    a: scaling factor for logistic function.
+    b: y-intercept.
+    ratings: dict of regression coefficients (with team
+      abbreviations as keys).
+    k: learning rate.
   """
   def __init__(self):
-  	super(Model, self).__init__()
-
-    # add code to load parameters from bucket here
-
-    self.k = 4.0 # learning rate
-    self.a = log(10) / 400 # scaling coefficient
-    self.b = 0.1521 # y intercept (log-odds of home advantage)
-    self.ratings = {} # team ratings
+    super(Model, self).__init__(os.environ.get('ELO-BUCKET-NAME'))
 
   def predict_proba(self, game: Game) -> float:
     """Predict probability that home team wins."""
@@ -42,9 +30,3 @@ class ELO(Model):
     p = self.predict_proba(game)
     self.rating[game.home] += self.k * (result - p)
     self.rating[game.visitor] += self.k * (p - result)
-
-  def save_parameters(self) -> None:
-    """Save model parameters."""
-
-    # add code to save to bucket here
-    pass
