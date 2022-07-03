@@ -13,8 +13,8 @@ This service forecasts wins over 500 for each team for the next few games.
 
 ## To do (infrastructure)
 - Create new service.
+- Add permissions.
 - Add github action for deployment.
-- Create buckets for model weights.
 
 # Model Descriptions
 
