@@ -4,7 +4,7 @@ from typing import List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from utils import load_parameters, save_paramters
+from utils import load_parameters, save_parameters
 
 @dataclass
 class Game():
@@ -36,7 +36,7 @@ class Model(ABC):
 
   def save_parameters(self) -> None:
     """Save model parameters."""
-    save_paramters(self.name, self.params)
+    save_parameters(self.name, self.params)
 
   def train(self, schedule: List[Game], results: List[float]) -> None:
     """Train the model with game results."""
