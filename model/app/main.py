@@ -10,9 +10,9 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 
-from model import Game
-from forecast import Forecaster
-from elo import ELO
+# from model import Game
+# from forecast import Forecaster
+# from elo import ELO
 
 
 app = Flask(__name__)
@@ -36,16 +36,18 @@ def train():
   data = request.get_json()
 
   # initialize the model
-  model_name = os.environ.get('MODEL-NAME')
-  if model_name == 'elo':
-    m = ELO()
+  model_name = data['model_name']
+  if model_name == 'test':
+    return
+  # elif data['model_name'] == 'elo':
+  #   m = ELO()
 
   # train and save model parameters
-  m.train(
-    [Game(**g) for g in data['games']],
-    data['results']
-  )
-  m.save_parameters()
+  # m.train(
+  #   [Game(**g) for g in data['games']],
+  #   data['results']
+  # )
+  # m.save_parameters()
 
   return
 
@@ -69,13 +71,15 @@ def forecast():
   data = request.get_json()
 
   # generate forecast
-  forecaster = Forecaster(os.environ.get('MODEL-NAME'))
-  f = forecaster.forecast(
-    [Game(**g) for g in data['schedule']]
-  )
+  # forecaster = Forecaster(os.environ.get('MODEL-NAME'))
+  # f = forecaster.forecast(
+  #   [Game(**g) for g in data['schedule']]
+  # )
  
   # package forecast and return 
-  return jsonify({'forecast': f})
+  # return jsonify({'forecast': f})
+
+  return data
 
 if __name__ == "__main__":
   app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
