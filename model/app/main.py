@@ -34,7 +34,7 @@ def set_parameters():
 
   env_param_name = model_name.upper() + "-BUCKET-NAME"
   if os.getenv(env_param_name):
-    bucket_name = os.getenv()
+    bucket_name = os.getenv(env_param_name)
     save_parameters(params, bucket_name)
     return Response("Success!", status=201, mimetype='text/plain')
 
