@@ -53,7 +53,7 @@ def train():
   # )
   # m.save_parameters()
 
-  return
+  return request
 
 @app.route("/forecast", methods=['POST'])
 def forecast():
