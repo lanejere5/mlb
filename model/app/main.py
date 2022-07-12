@@ -21,18 +21,7 @@ load_dotenv()
 
 @app.route("/", methods=['GET'])
 def ping():
-  """Train the model.
-
-  Expects the request body to contain two lists (in JSON format):
-
-  games: a list of games played, where each game
-    is represented as a dict with keys such as
-    'home' and 'visitor'.
-
-  results: a list of 0/1 corresponding to the outcome
-    of the games.
-  """
-  return "hello."
+  return "hello!"
 
 @app.route("/train", methods=['POST'])
 def train():
@@ -48,12 +37,12 @@ def train():
     of the games.
   """
   # unpack request data
-  data = request.get_json()
+  # data = request.get_json()
 
-  # initialize the model
-  model_name = data['model_name']
-  if model_name == 'test':
-    return
+  # # initialize the model
+  # model_name = data['model_name']
+  # if model_name == 'test':
+  #   return
   # elif data['model_name'] == 'elo':
   #   m = ELO()
 
