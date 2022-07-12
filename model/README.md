@@ -1,20 +1,11 @@
 # Forecasting model(s)
 
-This service forecasts wins over 500 for each team for the next few games.
+This service forecasts results of upcoming games.
 
-## To do (for this service)
-- Testing
-- Exception handling
-- Improve the model and experiment with other models.
 
 ## To do (for other services)
 - data-pipeline: make request to model. Add response to json output for dashboard.
 - dashboard: incorporate forecast into plot.
-
-## To do (infrastructure)
-- Create new service.
-- Add permissions.
-- Add github action for deployment.
 
 # Model Descriptions
 
