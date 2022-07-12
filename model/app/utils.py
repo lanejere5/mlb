@@ -7,7 +7,7 @@ from typing import Dict
 from google.cloud import storage
 
 
-def sigmoid(x):
+def sigmoid(x: float):
   """Numerically stable sigmoid."""
   if x >= 0:
     return 1 / (1 + exp(-x))
@@ -27,6 +27,8 @@ def load_parameters(bucket_name: str) -> Dict:
 
   pkl = blob.download_as_string()
   params = pickle.loads(pkl)
+  print("Loaded params:")
+  print(params)
   return params
 
 def save_parameters(bucket_name: str, params) -> None:
@@ -39,4 +41,7 @@ def save_parameters(bucket_name: str, params) -> None:
 
   pkl = pickle.dumps(params)
   blob.upload_from_string(pkl)
+
+  print("Saved params:")
+  print(params)
   return
