@@ -14,7 +14,6 @@ from utils import load_parameters, save_parameters
 from elo import ELO
 
 
-
 app = Flask(__name__)
 
 load_dotenv()
@@ -33,9 +32,9 @@ def set_parameters():
   params = data['params']
 
   env_param_name = model_name.upper() + "-BUCKET-NAME"
-  if os.getenv(env_param_name):
-    bucket_name = os.getenv(env_param_name)
-    save_parameters(params, bucket_name)
+  bucket_name = os.getenv(env_param_name)
+  if bucket_name:
+    save_parameters(bucket_name, params)
     return Response("Success!", status=201, mimetype='text/plain')
 
   return Response("Invalid model name.", status=400, mimetype='text/plain')
@@ -72,7 +71,7 @@ def train():
 
   # train model and save new parameters
   m.train(data['games'], data['results'])
-  save_parameters(m.params, bucket_name)
+  save_parameters(bucket_name, m.params)
 
   return Response("Success!", status=201, mimetype='text/plain')
 
