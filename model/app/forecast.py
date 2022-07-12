@@ -29,7 +29,7 @@ class Forecaster():
     0 if visitor wins.
     """
     p = self.model.predict_proba(game)
-    return int(random.uniform() <= p)
+    return int(random.uniform(0, 1) <= p)
 
   def simulate_schedule(self, schedule: List[Dict]) -> np.ndarray:
     """Simulate schedule.
