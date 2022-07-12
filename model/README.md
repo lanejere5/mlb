@@ -1,13 +1,18 @@
 # Forecasting model(s)
 
-This service forecasts results of upcoming games.
-
+This API provides two methods:
+- `train()` updates model parameters based on the outcome of games.
+- `forecast()` predicts results of upcoming games.
 
 ## To do (for other services)
 - data-pipeline: make request to model. Add response to json output for dashboard.
 - dashboard: incorporate forecast into plot.
 
 # Model Descriptions
+
+The service provides several forecasting models. A model is selected by specifying a `model-name` in the json body of an api request.
+
+All models provide the interface inherited from `Model` which is defined in `model.py`.
 
 ## Basic Elo model (`elo.py`)
 
