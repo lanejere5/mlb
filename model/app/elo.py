@@ -32,7 +32,9 @@ class ELO(Model):
 
   def predict_proba(self, game: Dict) -> float:
     """Predict probability that home team wins."""
-    diff = self.params['rating'][game['home']] - self.params['rating'][game['visitor']]
+    home = self.params['map'][game['home']]
+    visitor = self.params['map'][game['visitor']]
+    diff = self.params['rating'][home] - self.params['rating'][visitor]
     logit = self.params['a'] * diff
     logit += self.params['b']
     return sigmoid(logit)
@@ -40,5 +42,7 @@ class ELO(Model):
   def step(self, game: Dict, result: float) -> None:
     """Perform a single step of SGD."""
     p = self.predict_proba(game)
-    self.params['rating'][game['home']] += self.params['k'] * (result - p)
-    self.params['rating'][game['visitor']] += self.params['k'] * (p - result)
+    home = self.params['map'][game['home']]
+    visitor = self.params['map'][game['visitor']]
+    self.params['rating'][home] += self.params['k'] * (result - p)
+    self.params['rating'][visitor] += self.params['k'] * (p - result)
