@@ -222,7 +222,6 @@ def postseason_race(dashboard_data: Dict=None) -> Tuple[go.Figure, datetime]:
   fig.update_yaxes(range=[y_min, y_max])
 
   # add shapes to highlight forecast
-  print(dashboard_data['teams']['TOR'])
   if 'forecast' in dashboard_data['teams']['TOR']:
     forcast_length = len(dashboard_data['teams']['TOR']['forecast'])
 
