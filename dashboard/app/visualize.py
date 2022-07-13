@@ -227,17 +227,27 @@ def postseason_race(dashboard_data: Dict=None) -> Tuple[go.Figure, datetime]:
 
     record_end = date_created - timedelta(days=1)
     fig.add_vline(
-        x=record_end,
-        line_width=1.5,
-        line_dash="dash",
-        line_color="grey"
+      x=record_end,
+      line_width=1.5,
+      line_dash="dash",
+      line_color="grey"
     )
     fig.add_vrect(
-        x0=record_end,
-        x1=record_end + timedelta(days=forcast_length),
-        line_width=0,
-        fillcolor="grey",
-        opacity=0.2
+      x0=record_end,
+      x1=record_end + timedelta(days=forcast_length),
+      line_width=0,
+      fillcolor="grey",
+      opacity=0.2
+    )
+    fig.add_annotation(
+      dict(font=dict(color='grey',size=12),
+      xref="x",
+      yref="y domain",
+      x=record_end,
+      y=0,
+      xshift=30,
+      showarrow=False,
+      text="Forecast")
     )
 
   return fig, date_created
