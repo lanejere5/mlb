@@ -1,19 +1,14 @@
 # An interactive dashboard for the MLB postseason race
 
-I'm a big baseball fan! I thought a dashboard visualizing the postseason race would be a fun way to practice and deepen some of my programming and data visualization skills.
+I'm a big baseball fan so I made a dashboard for visualizing the MLB postseason race.
 
 [Click here to see it in action!](https://dashboard-5odpqk6ypq-ue.a.run.app/)
 
 ![Preview](preview.png)
 
 I had a few basic goals for this project:
-- Create and deploy an interactive dashboard with Dash and Plotly.
+- Create and deploy a live interactive dashboard.
 - Implement a pipeline for ingesting real world data.
-- Learn to use github actions for CI/CD so I can iterate faster and more reliably.
+- Learn to use github actions to deploy services on `git push`.
 
-A few other things I've learned as a by-product:
-- Ways to optimize Docker images for Cloud Run services.
-
-I still have several future goals for this project (see the Projects tab):
-- Implement CI.
-- Create a Bayesian forcasting model and add projections to the visualization.
+I'm currently developing forecasting models and incorperating those forecasts into the plot.
