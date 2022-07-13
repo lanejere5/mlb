@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from typing import OrderedDict as OrderedDictType
 from typing import List, Dict, Tuple
+from copy import copy
 
 import plotly.graph_objects as go
 
@@ -51,7 +52,7 @@ def generate_traces(teams: Dict[str, Dict]) -> ScatterDict:
     trace_name = f"{data['name']} ({str(data['wins'])}-{str(data['losses'])})"
     
     # x-axis and y=-axis values for the plot
-    y_vals = data['record']
+    y_vals = copy(data['record'])
     if 'forecast' in data:
        y_vals += data['forecast']
     x_vals = [
