@@ -152,8 +152,8 @@ def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records:
       'rank': int(record['Rank'].iloc[-1])
     }
 
-    # generate random forecasts for testing
-    add_random_forecast(teams)
+  # generate random forecasts for testing
+  add_random_forecast(teams)
 
   # package with other metadata.
   data = {
