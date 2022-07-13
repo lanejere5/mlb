@@ -115,6 +115,17 @@ def merge_records(processed_records: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     wins_over_500_df = wins_over_500_df.set_index('Date')
   return wins_over_500_df
 
+def add_random_forecast(teams: Dict) -> None:
+  """Add random forecasts to data. Modifies teams in place."""
+  from random import randint
+
+  for team in teams.keys():
+    curr = teams[team]['record'][-1]
+    proj = [curr + 2 * randint(0, 1) - 1]
+    for i in range(30):
+      proj.append(proj[-1] + 2 * randint(0, 1) - 1)
+    teams[team]['forecast'] = proj
+
 def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records: pd.DataFrame) -> Dict:
   """Load dashboard data into dictionary format."""
   # load season specific team data from file
@@ -140,6 +151,9 @@ def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records:
       'losses': int(record['losses'].iloc[-1]),
       'rank': int(record['Rank'].iloc[-1])
     }
+
+    # generate random forecasts for testing
+    add_random_forecast(teams)
 
   # package with other metadata.
   data = {
