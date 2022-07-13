@@ -4,7 +4,7 @@ I'm a big baseball fan so I made a dashboard for visualizing the MLB postseason 
 
 [Click here to see it in action!](https://dashboard-5odpqk6ypq-ue.a.run.app/)
 
-![Preview](preview.png)
+![Preview](preview_forecast.png)
 
 I had a few basic goals for this project:
 - Create and deploy a live interactive dashboard. (see `/dashboard`).
