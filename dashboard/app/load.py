@@ -1,5 +1,5 @@
 # load.py
-"""Load dashboard data from local file or gcloud bucket."""
+"""Load dashboard data from bucket."""
 import os
 import json
 from datetime import date, timedelta
@@ -8,22 +8,14 @@ from dotenv import load_dotenv
 from typing import Dict
 
 
-def dashboard_data(test: bool=False) -> Dict:
-  """Load team records.
-
-  Loads team records for plotting.
-
-  Args:
-    test: if false data is loaded from gcloud storage bucket.
+def dashboard_data() -> Dict:
+  """Load team records for plotting.
 
   Returns:
-    Dictionary of dashboard data. 
+  --------
+    Dict of dashboard data. See docstring for visualize.generate_traces
+    for more info about this dict.
   """
-  if test:
-    with open('test-dashboard-data.json', 'r') as f:
-      dashboard_data = json.loads(f.read())
-    return dashboard_data
-
   load_dotenv()
 
   storage_client = storage.Client()
