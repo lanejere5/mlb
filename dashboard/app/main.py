@@ -10,7 +10,7 @@ server = Flask(__name__)
 fig, created = postseason_race()
 code_src = "[View source on github](https://github.com/lanej5/mlb)."
 data_src = "Data from [FanGraphs](https://www.fangraphs.com/)."
-updated = f"Last updated {created.strftime('%B %-d, %Y at %-I:%M %p')}"   
+updated = f"Last updated {created.strftime('%B %-d, %Y')}."   
 text = " ".join([code_src, data_src, updated])
 
 # create the dashboard
