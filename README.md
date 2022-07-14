@@ -6,7 +6,7 @@ I'm a big baseball fan so I made a dashboard for visualizing the MLB postseason 
 
 ## Architecture
 
-The dashboard is built from a combination of three google Cloud Run services.
+The dashboard is a combination of three google Cloud Run services.
 - `dashboard` serves the frontend dashboard. It loads a json file from a storage bucket.
 - `data-pipeline` scrapes game results from FanGraphs, processes the data, and updates the json file. It also calls the model API and incorporates a forecast into the dashboard data. It is triggered each morning by Cloud Scheduler.
 - `model` is an API for forecasting. It has two methods: 
