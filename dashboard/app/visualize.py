@@ -54,7 +54,7 @@ def generate_traces(teams: Dict[str, Dict]) -> ScatterDict:
     # x-axis and y=-axis values for the plot
     y_vals = copy(data['record'])
     if 'forecast' in data:
-       y_vals += data['forecast']
+      y_vals += data['forecast']
     x_vals = [
       datetime(2022, 4, 7) + timedelta(days=i) for i in range(len(y_vals))
     ]
