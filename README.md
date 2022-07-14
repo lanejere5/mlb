@@ -20,3 +20,9 @@ I'm currently developing several forecasting models. See `/model` for more detai
 ## DevOps
 
 One nice feature of this project is that I learned how to use Github Actions to continuously deploy each service to Cloud Run whenever new code is pushed to the corresponding directory in the repo.  So far this has saved me a lot of time doing simple things so that I can focus on writing better code. See `.github/workflows` for the github action yaml files.
+
+## Security
+
+I've followed all the security best practices I'm aware of. Although you can see all the source code for the services in this project, you shouldn't be able to do anything malicious. 
+- The backend services require authentication.
+- The github actions used to deploy each service use github secrets to associate the corresponding service accounts used for service-to-service authentication.
