@@ -23,6 +23,6 @@ One nice feature of this project is that I learned how to use Github Actions to 
 
 ## Security
 
-I've followed all the security best practices I'm aware of. Although you can see all the source code for the services in this project, you shouldn't be able to do anything malicious. 
-- The backend services require authentication.
-- The github actions used to deploy each service use github secrets to associate the corresponding service accounts used for service-to-service authentication.
+I've followed all the security best practices I'm aware of. Although you can see all the source code for the services in this project, you shouldn't be able to do anything malicious. This is because:
+- The backend services (`data-pipeline`, `model`, and storage) require authentication.
+- Github secrets are used to associate service accounts with services.
