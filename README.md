@@ -19,4 +19,4 @@ I'm currently developing several forecasting models. See `/model` for more detai
 
 ## DevOps
 
-One nice feature of this project is that I learned how to use Github Actions to automatically deploy each service to Cloud Run whenever new code is pushed to the corresponding directory in the repo.  So far this has saved me a lot of time doing simple things so that I can focus on writing better code. See `.github/workflows` for the github actions.
+One nice feature of this project is that I learned how to use Github Actions to continuously deploy each service to Cloud Run whenever new code is pushed to the corresponding directory in the repo.  So far this has saved me a lot of time doing simple things so that I can focus on writing better code. See `.github/workflows` for the github action yaml files.
