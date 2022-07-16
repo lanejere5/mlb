@@ -25,6 +25,10 @@ divisions = {
 
 teams = [team for div, teams in divisions.items() for team in teams]
 
+team_div = {
+  team: div for div, teams in divisions.items() for team in teams
+}
+
 team_name_abbr = {
   'New York Yankees': 'NYY',
   'Tampa Bay Rays': 'TBR',
@@ -175,7 +179,7 @@ class Pipeline():
                        results: List[int],
                        schedule: List[Dict],
                        forecast_results: List[float]) -> None:
-        """Update dashboard data with game results and forecast."""
+    """Update dashboard data with game results and forecast."""
     # collect results by team
     team_results = defaultdict(int)
     for game, result in zip(games, results):
@@ -263,7 +267,7 @@ class Pipeline():
 
     # update date
     dashboard_data['created'] = datetime.today().strftime('%Y-%m-%d')
-    
+
     self.put_dashboard_data(dashboard_data)
   
   def run(self) -> int:
