@@ -239,9 +239,9 @@ class Pipeline():
 
     for div, ts in divisions.items():
       team_list = [(t, dashboard_data['teams'][t]['gb']) for t in ts]
-      print(team_list)
+      # print(team_list)
       team_ranks = rank_division(team_list)
-      print(team_ranks)
+      # print(team_ranks)
       for x in team_ranks:
         dashboard_data['teams'][x[0]]['rank'] = x[1]
 
