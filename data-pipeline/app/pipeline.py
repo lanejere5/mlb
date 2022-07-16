@@ -1,211 +1,277 @@
 # pipeline.py
-"""Process game data.
-
-Defines a Pipeline class that implements the following
-sequence of operations.
-
-1. Scrape game results from FanGraphs
-2. Process game results for plotting
-3. Format data as json
-4. Save to a google cloud storage bucket
-"""
-import time
+"""Data pipeline."""
+import urllib
 import json
 import os
-from calendar import month_abbr
-from datetime import datetime, date
-from typing import Dict
-
-import pandas as pd
-from pybaseball import schedule_and_record
 from dotenv import load_dotenv
+from datetime import datetime, date, timedelta
+from typing import List, Dict, Tuple
+from collections import defaultdict
+
 from google.cloud import storage
 
+from model_interface import train, forecast
 
-divisions = {
-  'al_east': ['NYY', 'TBR', 'TOR', 'BAL', 'BOS'],
-  'al_central': ['CHW', 'CLE', 'DET', 'KCR', 'MIN'],
-  'al_west': ['LAA', 'OAK', 'SEA', 'TEX', 'HOU'],
-  'nl_east': ['ATL', 'NYM', 'PHI', 'MIA', 'WSN'],
-  'nl_central': ['CHC', 'MIL', 'STL', 'PIT', 'CIN'],
-  'nl_west': ['LAD', 'COL', 'ARI', 'SFG', 'SDP']
+
+# gross, put this in a config file
+teams = [
+  'NYY',
+  'TBR',
+  'TOR',
+  'BAL',
+  'BOS',
+  'CHW',
+  'CLE',
+  'DET',
+  'KCR',
+  'MIN',
+  'LAA',
+  'OAK',
+  'SEA',
+  'TEX',
+  'HOU',
+  'ATL',
+  'NYM',
+  'PHI',
+  'MIA',
+  'WSN',
+  'CHC',
+  'MIL',
+  'STL',
+  'PIT',
+  'CIN',
+  'LAD',
+  'COL',
+  'ARI',
+  'SFG',
+  'SDP'
+]
+
+team_name_abbr = {
+  'New York Yankees': 'NYY',
+  'Tampa Bay Rays': 'TBR',
+  'Toronto Blue Jays': 'TOR',
+  'Baltimore Orioles': 'BAL',
+  'Boston Red Sox': 'BOS',
+  'Chicago White Sox': 'CHW',
+  'Cleveland Guardians': 'CLE',
+  'Detroit Tigers': 'DET',
+  'Kansas City Royals': 'KCR',
+  'Minnesota Twins': 'MIN',
+  'Los Angeles Angels': 'LAA',
+  'Oakland Athletics': 'OAK',
+  'Seattle Mariners': 'SEA',
+  'Texas Rangers': 'TEX',
+  'Houston Astros': 'HOU',
+  'Atlanta Braves': 'ATL',
+  'New York Mets': 'NYM',
+  'Philadelphia Phillies': 'PHI',
+  'Miami Marlins': 'MIA',
+  'Washington Nationals': 'WSN',
+  'Chicago Cubs': 'CHC',
+  'Milwaukee Brewers': 'MIL',
+  'St. Louis Cardinals': 'STL',
+  'Pittsburgh Pirates': 'PIT',
+  'Cincinnati Reds': 'CIN',
+  'Los Angeles Dodgers': 'LAD',
+  'Colorado Rockies': 'COL',
+  'Arizona Diamondbacks': 'ARI',
+  'San Francisco Giants': 'SFG',
+  'San Diego Padres': 'SDP'
 }
-
-teams = [team for div, teams in divisions.items() for team in teams]
-
-def scrape() -> Dict[str, pd.DataFrame]:
-  """Scrape 2022 team records from FanGraphs.
-
-  Returns:
-    A dictionary of raw dataframes with team abbreviations as keys.
-  """
-  raw_records = {}
-
-  for team in teams:
-    raw_records[team] = schedule_and_record(2022, team)
-    time.sleep(2) # avoid getting blocked
-
-  return raw_records
-
-def preprocess(raw_records: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
-  """Preprocess records.
-
-  The raw DataFrame for each team is processed as follows.
-
-  Columns 'Date', 'Home_Away', 'Opp', 'R', 'RA', 'Rank' are selected and 
-  rows corresponding to unplayed games are dropped.
-
-  The Date column is converted to timestamp.
-
-  Win / loss is calculated from runs for and against.
-
-  Args:
-    raw_records: dictionary of raw DataFrames with team abbreviations as keys
-                 that result from scrape().
-
-  Returns:
-    Dictionary of processed DataFrames with team abbreviations as keys.
-  """
-  months = {abbr: i + 1 for i, abbr in enumerate(month_abbr[1:])}
-  processed = {}
-  for team, data in raw_records.items():
-    # select relevant columns
-    processed[team] = data.loc[~data['R'].isna(), ['Date', 'Home_Away', 'Opp', 'R', 'RA', 'Rank']].copy()
-    # convert date strings to timestamp
-    processed[team]['Date'] = processed[team]['Date'].str.split(' ') \
-    .apply(lambda x: pd.Timestamp(datetime(2022, months[x[1]], int(x[2]))))
-    # calculate win / loss indicators (summing this column will produce wins over .500)
-    processed[team]['W/L'] = (processed[team]['R'] - processed[team]['RA']).apply(lambda x: 1 if x > 0 else -1)
-    # calculate total wins / losses
-    processed[team]['wins'] = processed[team]['W/L'].apply(lambda x: 1 if x == 1 else 0).cumsum()
-    processed[team]['losses'] = processed[team]['W/L'].apply(lambda x: 1 if x == -1 else 0).cumsum()
-  return processed
-
-def merge_records(processed_records: Dict[str, pd.DataFrame]) -> pd.DataFrame:
-  """Merge records and generate plots.
-
-  Win / loss columns from the processed DataFrames of each team are merged
-  into a single DataFrame with a row for each date in the given time period.
-
-  These columns are then summed to produce the 'wins over .500' values for each team.
-
-  Args:
-    processed_records: dictionary of processed DataFrames with team abbreviations as keys
-                 that result from preprocess().
-
-  Returns:
-    DataFrame with a columns containing the number of wins over .500 for each team, up to yesterday.
-  """
-  played_season = pd.date_range(start=datetime(2022, 4, 7), end=pd.Timestamp.today() - pd.Timedelta(1, 'd'))
-  wins_over_500_df = pd.DataFrame(played_season.astype('datetime64[ns]'), columns=['Date'])
-  
-  for team, record in processed_records.items():
-    # the following groupby accounts for double headers
-    wins_over_500 = record.groupby('Date', as_index=False)['W/L'].sum()
-    wins_over_500.rename(columns={'W/L': team}, inplace=True)
-    # accumulate values to wins over .500
-    wins_over_500[team] = wins_over_500[team].cumsum()
-    # merge to dataframe
-    wins_over_500_df = pd.merge(
-      wins_over_500_df,
-      wins_over_500, 
-      how='outer',
-      on='Date'
-    ).ffill().fillna(0)
-    wins_over_500_df = wins_over_500_df.set_index('Date')
-  return wins_over_500_df
-
-def add_random_forecast(teams: Dict) -> None:
-  """Add random forecasts to data. Modifies teams in place."""
-  from random import randint
-
-  for team in teams.keys():
-    curr = teams[team]['record'][-1]
-    proj = [curr + 2 * randint(0, 1) - 1]
-    for i in range(30):
-      proj.append(proj[-1] + 2 * randint(0, 1) - 1)
-    teams[team]['forecast'] = proj
-
-def prepare_dashboard_data(wins_over_500_df: pd.DataFrame, preprocessed_records: pd.DataFrame) -> Dict:
-  """Load dashboard data into dictionary format."""
-  # load season specific team data from file
-  with open('season_data_2022.json', 'r') as f:
-    season_data_2022 = json.load(f)
-
-  name = season_data_2022['name']
-  league = season_data_2022['league']
-  div = season_data_2022['div']
-  color = season_data_2022['color']
-
-  # combine season data, team records, and other information
-  # into a dict for the dashboard
-  teams = {}
-  for team, record in preprocessed_records.items():
-    teams[team] = {
-      'name': name[team],
-      'league': league[team],
-      'div': div[team],
-      'color': color[team],
-      'record': wins_over_500_df[team].to_list(),
-      'wins': int(record['wins'].iloc[-1]), # need python types for json serialization
-      'losses': int(record['losses'].iloc[-1]),
-      'rank': int(record['Rank'].iloc[-1])
-    }
-
-  # generate random forecasts for testing
-  add_random_forecast(teams)
-
-  # package with other metadata.
-  data = {
-    'teams': teams,
-    'created': str(date.today()),
-    'season': 2022
-  }
-
-  return data
-
-def validate(data: pd.DataFrame) -> bool:
-  """Validate the dataframe.
-
-  A future version of this function will test the data
-  for consistency.
-  """
-  return True
-
-def store_wins_over_500(wins_over_500_df: pd.DataFrame) -> None:
-  """Put wins over 500 dataframe in bucket."""
-  load_dotenv()
-  storage_client = storage.Client()
-
-  bucket_name = os.environ.get('MLB-DATA-BUCKET-NAME')
-  blob_id = str(date.today()) + '-wins-over-500.parquet'
-  path = os.path.join('gs://', bucket_name, blob_id)
-  wins_over_500_df.to_parquet(path)
-
-def store_dashboard_data(dashboard_data: Dict) -> None:
-  """Put dashboard data in bucket."""
-  load_dotenv()
-  storage_client = storage.Client()
-  bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
-  blob = bucket.blob(str(date.today()) + '-dashboard-data.json')
-  blob.upload_from_string(json.dumps(dashboard_data))
-
 
 class Pipeline():
   """Pipeline class.
 
-  This class simply provides the run() method that invokes
-  the data pipeline.
+  This "class" simply encapsulates a pipeline that implements
+  the following sequence of operations. The pipeline is invoked by
+  run().
   """
-  def run(self) -> int:
-    """Run data pipeline."""
-    raw_records = scrape()
-    preprocessed_records = preprocess(raw_records)
-    wins_over_500_df = merge_records(preprocessed_records)
-    dashboard_data = prepare_dashboard_data(wins_over_500_df, preprocessed_records)
-    if validate(dashboard_data):
-      store_wins_over_500(wins_over_500_df)
-      store_dashboard_data(dashboard_data)
-      return 200
+  def __init__(self):
+    # base url for statsapi calls
+    self.statsAPI_base_url = "https://statsapi.mlb.com"
+
+    # bucket for dashboard data
+    load_dotenv()
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
+    self.blob = bucket.blob(str(date.today()) + '-dashboard-data.json')
+
+  @staticmethod
+  def parse_game_results(game: Dict) -> Tuple[Dict, int]:
+    """Parse data from MLB statsapi.
+
+    Returns:
+    --------
+    parsed_game: selected fields from statsAPI data
+    result: 1 if home team won, 0 if home team lost, None if game was not played
+    """
+    home = team_name_abbr[game['teams']['home']['team']['name']]
+    visitor = team_name_abbr[game['teams']['away']['team']['name']]
+    if (home in teams) and (visitor in teams): # 
+      parsed_game = {
+        'home': game['teams']['home']['team']['name'],
+        'visitor': game['teams']['away']['team']['name'],
+        'date': game['officialDate']
+      }
     else:
-      return 400
+      parsed_game = None
+
+    if 'isWinner' in game['teams']['home']:
+      result = int(game['teams']['home']['isWinner'])
+    else:
+      result = None
+    return parsed_game, result
+
+  def get_game_results(self, day: date) -> Tuple[List[Dict], List[int]]:
+    """Get game results for given day from MLB statsAPI."""
+    url = self.statsAPI_base_url + "/api/v1/schedule?language=en&sportId=1&date="
+    url += day.strftime("%m/%d/%Y")
+
+    response = urllib.request.urlopen(url)
+
+    data = json.loads(response.read())
+
+    games = []
+    results = []
+    for game in data['dates'][0]['games']:
+      parsed_game, result = self.parse_game_results(game)
+      if (parsed_game is not None) and (result is not None):
+        games.append(parsed_game)
+        results.append(result)
+
+    return games, results
+
+  def train_models(self,
+                   model_names: List[str],
+                   games: List[Dict],
+                   results: List[int]) -> None:
+    """Train models from game data."""
+    for model_name in model_names:
+      train(model_name, games, results)
+
+  @staticmethod
+  def parse_future_game(game: Dict) -> Dict:
+    """Parse future game from statsAPI."""
+    home = team_name_abbr[game['teams']['home']['team']['name']]
+    visitor = team_name_abbr[game['teams']['away']['team']['name']]
+    if (home in teams) and (visitor in teams):
+      parsed_future_game = {
+        'home': game['teams']['home']['team']['name'],
+        'visitor': game['teams']['away']['team']['name'],
+        'date': game['officialDate']
+      }
+    else:
+      parsed_future_game = None
+    return parsed_future_game
+
+
+  def get_schedule(self, start_date: date, end_date: date) -> List[Dict]:
+    """Get schedule for date range (inclusive)."""
+    url = self.statsAPI_base_url + "/api/v1/schedule?language=en&sportId=1"
+    url += "&startDate=" + start_date.strftime("%m/%d/%Y")
+    url += "&endDate=" + end_date.strftime("%m/%d/%Y")
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+
+    games = []
+
+    for day in data['dates']:
+      for game in day['games']:
+        parsed_future_game = self.parse_future_game(game)
+        if parsed_future_game is not None:
+          games.append(parsed_future_game)
+
+    return games
+
+  def get_dashboard_data(self) -> Dict:
+    """Retrieve dashboard data from bucket."""
+    return json.loads(self.blob.download_as_string())
+
+  def put_dashboard_data(self, dashboard_data: Dict) -> None:
+    """Put dashboard data in bucket."""
+    self.blob.upload_from_string(json.dumps(dashboard_data))
+
+  def update_dashboard(self,
+                       games: List[Dict],
+                       results: List[int],
+                       schedule: List[Dict],
+                       forecast_results: List[float]) -> None:
+    """Update dashboard data with game results and forecast."""
+    # collect results by team
+    team_results = defaultdict(int)
+    for game, result in zip(games, results):
+      team_results[game['home']] += 2 * result - 1
+      team_results[game['visitor']] += 1 - 2 * result
+
+    # load dashboard data
+    dashboard_data = self.get_dashboard_data()
+
+    # update team records, win / loss, and rank
+    num_days = (date.today() - date(2022, 4, 7)).days # number of days in season so far
+    for team in teams:
+      # truncate results in case pipeline is invoked twice in one day
+      record = dashboard_data['teams'][team]['record'][:num_days - 1]
+      record.append(record[-1] + team_results[team])
+      dashboard_data['teams'][team]['record'] = record
+      if team_results[team] > 0:
+        dashboard_data['teams'][team]['wins'] += team_results[team]
+      else:
+        dashboard_data['teams'][team]['losses'] -= team_results[team]
+
+      # update rank
+
+    # collect forecasted results by date and team
+    forecast_team_results = defaultdict(float)
+    for game, prob in zip(schedule, forecast_results):
+      d = datetime.strptime(game['date'], '2022-08-01')
+      forecast_team_results[(d, game['home'])] += 2 * prob - 1
+      forecast_team_results[(d, game['visitor'])] += 1 - 2 * prob
+     
+    # convert game forecasts to wins over 500 for each team
+    for team in teams:
+      dashboard_data['teams'][team]['forecast'] = []
+    dates = [date.today() + timedelta(days=i) for i in range(30)] # poor cohesion here
+    for d in dates:
+      for team in teams:
+        if len(dashboard_data['teams'][team]['forecast']) == 0:
+          x = dashboard_data['teams'][team]['record'][-1] + forecast_team_results[(d, team)]
+          dashboard_data['teams'][team]['forecast'].append(x)
+        else:
+          x = dashboard_data['teams'][team]['forecast'][-1] + forecast_team_results[(d, team)]
+          dashboard_data['teams'][team]['forecast'].append(x)
+
+    self.put_dashboard_data(dashboard_data)
+  
+  def run(self) -> int:
+    """Run data pipeline.
+
+    1. Get game results for previous day from MLB statsapi.
+    2. Train model(s) using game results (1). Depending on the model
+       this may require gathering additional data.
+    3. Get upcoming schedule from MLB statsAPI.
+    4. Get forecast from model using schedule from (3).
+    5. Load the dashboard data file from bucket
+    6. Update dashboard data with results (1) and forecast (4).
+    7. Put updated dashboard data file back into bucket.
+    """
+    # 1. get results of yesterday's games
+    print("Retrieving game results...")
+    games, results = self.get_game_results(date.today() - timedelta(days=1))
+
+    # 2. train the models
+    print("Training models...")
+    model_names = ['elo']
+    self.train_models(model_names, games, results)
+
+    # 3 - 4. forecast next 30 days
+    print("Retrieving schedule...")
+    schedule = self.get_schedule(date.today(), date.today() + timedelta(days=30))
+    model_name = 'elo'
+    print("Retrieving forecast...")
+    forecast_results = forecast(model_name, schedule)
+
+    # 5 - 7. update dashboard data
+    print("Updating dashboard...")
+    self.update_dashboard(games, results, schedule, forecast_results)
+    
