@@ -106,12 +106,12 @@ class Pipeline():
     parsed_game: selected fields from statsAPI data
     result: 1 if home team won, 0 if home team lost, None if game was not played
     """
-    home = team_name_abbr[game['teams']['home']['team']['name']]
-    visitor = team_name_abbr[game['teams']['away']['team']['name']]
-    if (home in teams) and (visitor in teams): # 
+    home_name = game['teams']['home']['team']['name']
+    visitor_name = game['teams']['away']['team']['name']
+    if (home_name in team_name_abbr) and (visitor_name in team_name_abbr):
       parsed_game = {
-        'home': game['teams']['home']['team']['name'],
-        'visitor': game['teams']['away']['team']['name'],
+        'home': team_name_abbr[home_name],
+        'visitor': team_name_abbr[visitor_name],
         'date': game['officialDate']
       }
     else:
@@ -153,12 +153,12 @@ class Pipeline():
   @staticmethod
   def parse_future_game(game: Dict) -> Dict:
     """Parse future game from statsAPI."""
-    home = team_name_abbr[game['teams']['home']['team']['name']]
-    visitor = team_name_abbr[game['teams']['away']['team']['name']]
-    if (home in teams) and (visitor in teams):
+    home_name = game['teams']['home']['team']['name']
+    visitor_name = game['teams']['away']['team']['name']
+    if (home_name in team_name_abbr) and (visitor_name in team_name_abbr):
       parsed_future_game = {
-        'home': game['teams']['home']['team']['name'],
-        'visitor': game['teams']['away']['team']['name'],
+        'home': team_name_abbr[home_name],
+        'visitor': team_name_abbr[visitor_name],
         'date': game['officialDate']
       }
     else:
@@ -224,7 +224,7 @@ class Pipeline():
     # collect forecasted results by date and team
     forecast_team_results = defaultdict(float)
     for game, prob in zip(schedule, forecast_results):
-      d = datetime.strptime(game['date'], '2022-08-01')
+      d = datetime.strptime(game['date'], '%Y-%m-%d')
       forecast_team_results[(d, game['home'])] += 2 * prob - 1
       forecast_team_results[(d, game['visitor'])] += 1 - 2 * prob
      
@@ -255,6 +255,9 @@ class Pipeline():
     6. Update dashboard data with results (1) and forecast (4).
     7. Put updated dashboard data file back into bucket.
     """
+    season_end = date(2022, 10, 2)
+    if date.today() > season_end:
+      return
     # 1. get results of yesterday's games
     print("Retrieving game results...")
     games, results = self.get_game_results(date.today() - timedelta(days=1))
@@ -266,7 +269,8 @@ class Pipeline():
 
     # 3 - 4. forecast next 30 days
     print("Retrieving schedule...")
-    schedule = self.get_schedule(date.today(), date.today() + timedelta(days=30))
+    end_date = min(date.today() + timedelta(days=30), season_end)
+    schedule = self.get_schedule(date.today(), end_date)
     model_name = 'elo'
     print("Retrieving forecast...")
     forecast_results = forecast(model_name, schedule)
@@ -274,4 +278,6 @@ class Pipeline():
     # 5 - 7. update dashboard data
     print("Updating dashboard...")
     self.update_dashboard(games, results, schedule, forecast_results)
+
+    return 200
     
