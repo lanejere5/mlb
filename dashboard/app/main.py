@@ -9,7 +9,7 @@ server = Flask(__name__)
 # get data
 fig, created = postseason_race()
 code_src = "[View code on github](https://github.com/lanej5/mlb)."
-data_src = "[Data sources and attribution](https://github.com/lanej5/mlb/data.md)."
+data_src = "[Data sources and attribution](https://github.com/lanej5/mlb/blob/main/data.md)."
 updated = f"Last updated {created.strftime('%B %-d, %Y')}."   
 text = " ".join([code_src, data_src, updated])
 

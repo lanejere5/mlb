@@ -15,7 +15,7 @@ The dashboard is a combination of three google Cloud Run services.
 
 ## Data
 
-[Data sources](https://github.com/lanej5/mlb/data.md)
+[Data sources](https://github.com/lanej5/mlb/blob/main/data.md)
 
 ## Modelling
 
