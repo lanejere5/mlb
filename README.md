@@ -15,9 +15,7 @@ The dashboard is a combination of three google Cloud Run services.
 
 ## Data
 
-At the moment I'm scraping game results from FanGraphs. It's a bit clumsy (FanGraphs doesn't update until 10AM the day after a game) but was the fastest way to get things working. I'm working to transition this to MLB's statsAPI which has more data and better latency.
-
-In offline training I'm combining historical data from retrosheet with some other data such as pitching stats from Baseball-Reference.com. I'm also using some geographical data from OpenStreetMaps to estimate travel distance between ballparks. 
+[Data sources](https://github.com/lanej5/mlb/data.md)
 
 ## Modelling
 
