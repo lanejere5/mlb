@@ -14,38 +14,16 @@ from model_interface import train, forecast
 
 
 # gross, put this in a config file
-teams = [
-  'NYY',
-  'TBR',
-  'TOR',
-  'BAL',
-  'BOS',
-  'CHW',
-  'CLE',
-  'DET',
-  'KCR',
-  'MIN',
-  'LAA',
-  'OAK',
-  'SEA',
-  'TEX',
-  'HOU',
-  'ATL',
-  'NYM',
-  'PHI',
-  'MIA',
-  'WSN',
-  'CHC',
-  'MIL',
-  'STL',
-  'PIT',
-  'CIN',
-  'LAD',
-  'COL',
-  'ARI',
-  'SFG',
-  'SDP'
-]
+divisions = {
+  'al_east': ['NYY', 'TBR', 'TOR', 'BAL', 'BOS'],
+  'al_central': ['CHW', 'CLE', 'DET', 'KCR', 'MIN'],
+  'al_west': ['LAA', 'OAK', 'SEA', 'TEX', 'HOU'],
+  'nl_east': ['ATL', 'NYM', 'PHI', 'MIA', 'WSN'],
+  'nl_central': ['CHC', 'MIL', 'STL', 'PIT', 'CIN'],
+  'nl_west': ['LAD', 'COL', 'ARI', 'SFG', 'SDP']
+}
+
+teams = [team for div, teams in divisions.items() for team in teams]
 
 team_name_abbr = {
   'New York Yankees': 'NYY',
@@ -197,7 +175,7 @@ class Pipeline():
                        results: List[int],
                        schedule: List[Dict],
                        forecast_results: List[float]) -> None:
-    """Update dashboard data with game results and forecast."""
+        """Update dashboard data with game results and forecast."""
     # collect results by team
     team_results = defaultdict(int)
     for game, result in zip(games, results):
@@ -208,26 +186,68 @@ class Pipeline():
     dashboard_data = self.get_dashboard_data()
 
     # update team records, win / loss, and rank
+    div_leader = {div: -10e5 for div, _ in divisions.items()}
     num_days = (date.today() - date(2022, 4, 7)).days # number of days in season so far
     for team in teams:
-      # truncate results in case pipeline is invoked twice in one day
-      record = dashboard_data['teams'][team]['record'][:num_days - 1]
-      record.append(record[-1] + team_results[team])
-      dashboard_data['teams'][team]['record'] = record
-      if team_results[team] > 0:
-        dashboard_data['teams'][team]['wins'] += team_results[team]
-      else:
-        dashboard_data['teams'][team]['losses'] -= team_results[team]
+      if len(dashboard_data['teams'][team]['record']) == num_days - 1:
+        dashboard_data['teams'][team]['record'].append(
+          dashboard_data['teams'][team]['record'][-1] + team_results[team]
+        )
+        if team_results[team] > 0:
+          dashboard_data['teams'][team]['wins'] += team_results[team]
+        else:
+          dashboard_data['teams'][team]['losses'] -= team_results[team]
 
-      # update rank
+      elif len(dashboard_data['teams'][team]['record']) < num_days - 1:
+        print(f"Error: Record of {team} is missing days.")
+
+      # compute wins over 500 and update division leader
+      dashboard_data['teams'][team]['wins_over_500'] = dashboard_data['teams'][team]['wins'] - dashboard_data['teams'][team]['losses']
+      if dashboard_data['teams'][team]['wins_over_500'] > div_leader[team_div[team]]:
+        div_leader[team_div[team]] = dashboard_data['teams'][team]['wins_over_500']
+
+    # compute games back
+    for team in teams:
+      dashboard_data['teams'][team]['gb'] = (div_leader[team_div[team]] - dashboard_data['teams'][team]['wins_over_500']) / 2
+    
+    # rank divisions
+    def dense_rank(l: List[int]) -> List[int]:
+      # Dense rank non-increasing list of integers.
+      # Assumes l is sorted in decreasing order.
+      if not l:
+        return l
+      ranks = [1]
+      for i in range(1, len(l)):
+        if l[i] == l[i - 1]:
+          ranks.append(ranks[-1])
+        else:
+          ranks.append(ranks[-1] + 1)
+      return ranks
+    
+    def rank_division(team_list: List[Tuple[str, int]]):
+      # Rank division
+      # Args: Each item in the list is a pair x = ('TOR', 5)
+      # where x[1] is the number of games back
+      # Returns: pairs x = ('TOR', 3) where x[1] is division rank
+      team_list.sort(key=lambda x: x[1], reverse=False)
+      gb = [x[1] for x in team_list]
+      return [(x[0], rank) for (x, rank) in zip(team_list, dense_rank(gb))]
+
+    for div, ts in divisions.items():
+      team_list = [(t, dashboard_data['teams'][t]['gb']) for t in ts]
+      print(team_list)
+      team_ranks = rank_division(team_list)
+      print(team_ranks)
+      for x in team_ranks:
+        dashboard_data['teams'][x[0]]['rank'] = x[1]
 
     # collect forecasted results by date and team
     forecast_team_results = defaultdict(float)
     for game, prob in zip(schedule, forecast_results):
-      d = datetime.strptime(game['date'], '%Y-%m-%d')
+      d = datetime.strptime(game['date'], '%Y-%m-%d').date()
       forecast_team_results[(d, game['home'])] += 2 * prob - 1
       forecast_team_results[(d, game['visitor'])] += 1 - 2 * prob
-     
+        
     # convert game forecasts to wins over 500 for each team
     for team in teams:
       dashboard_data['teams'][team]['forecast'] = []
@@ -241,6 +261,9 @@ class Pipeline():
           x = dashboard_data['teams'][team]['forecast'][-1] + forecast_team_results[(d, team)]
           dashboard_data['teams'][team]['forecast'].append(x)
 
+    # update date
+    dashboard_data['created'] = datetime.today().strftime('%Y-%m-%d')
+    
     self.put_dashboard_data(dashboard_data)
   
   def run(self) -> int:
