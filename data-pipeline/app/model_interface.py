@@ -8,7 +8,8 @@ from typing import Dict, List
 import google.auth.transport.requests
 import google.oauth2.id_token
 
-endpoint = os.environ.get('MODEL-API-URL')
+# endpoint = os.environ.get('MODEL-API-URL')
+endpoint = 'https://model-5odpqk6ypq-ue.a.run.app'
 
 def make_request(method: str=None, data: Dict=None):
   """Make API request.
