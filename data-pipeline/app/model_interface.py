@@ -3,9 +3,7 @@
 import urllib
 import json
 import os
-import pandas as pd
-
-from Typing import Dict, List
+from typing import Dict, List
 
 import google.auth.transport.requests
 import google.oauth2.id_token
@@ -74,8 +72,7 @@ def train(model_name: str, games: List[Dict], results: List[int]) -> None:
 
   return
 
-
-def forecast(model_name: str, games: List[Dict]) -> List[Dict]:
+def forecast(model_name: str, games: List[Dict]) -> List[float]:
   """Get model forecast.
 
   Args:
@@ -94,5 +91,5 @@ def forecast(model_name: str, games: List[Dict]) -> List[Dict]:
   }
 
   response = make_request(method='forecast', data=data)
-
-  return
+  data = json.loads(response.read())
+  return data['forecast']
