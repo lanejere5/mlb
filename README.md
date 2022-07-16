@@ -13,9 +13,17 @@ The dashboard is a combination of three google Cloud Run services.
   - `train` uses game results to update the model. The model is trained in an online fashion.
   - `forecast` uses Monte Carlo simulation to prediction results of upcoming games.
 
+## Data
+
+At the moment I'm scraping game results from FanGraphs. It's a bit clumsy (FanGraphs doesn't update until 10AM the day after a game) but was the fastest way to get things working. I'm working to transition this to MLB's statsAPI which has more data and better latency.
+
+In offline training I'm combining historical data from retrosheet with some other data such as pitching stats from Baseball-Reference.com. I'm also using some geographical data from OpenStreetMaps to estimate travel distance between ballparks. 
+
 ## Modelling
 
-I'm currently developing several forecasting models. See `/model` for more details. 
+I'm currently developing several forecasting models offline. Both are essentially state-space models with online learning algorithms. There are two flavours:
+- Logistic regression with one-hot representation of team strength (this is essentially the ELO model) plus adjustments.
+- A Bayesian version of the same model where team strengths are modelled by Gaussians (this is like glicko but without the approximations).
 
 ## DevOps
 
