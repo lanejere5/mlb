@@ -26,9 +26,10 @@ def make_request(method: str=None, data: Dict=None):
   HTTPResponse.
   """
   if method is not None:
-  	assert method in {'train', 'forecast'}
-  	assert data is not None
-  	url = os.path.join(endpoint, method)
+    assert method in {'train', 'forecast'}
+    assert data is not None
+    print(endpoint, method)
+    url = os.path.join(endpoint, method)
   else:
   	url = endpoint # in this case we just ping the API.
 
