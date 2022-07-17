@@ -76,8 +76,7 @@ class Pipeline():
     # bucket for dashboard data
     load_dotenv()
     storage_client = storage.Client()
-    bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
-    self.blob = bucket.blob(str(date.today()) + '-dashboard-data.json')
+    self.bucket = storage_client.bucket(os.environ.get('MLB-DATA-BUCKET-NAME'))
 
   @staticmethod
   def parse_game_results(game: Dict) -> Tuple[Dict, int]:
@@ -168,11 +167,15 @@ class Pipeline():
 
   def get_dashboard_data(self) -> Dict:
     """Retrieve dashboard data from bucket."""
-    return json.loads(self.blob.download_as_string())
+    yesterday = date.today() - timedelta(days=1)
+    blob = self.bucket.blob(str(yesterday) + '-dashboard-data.json')
+    return json.loads(blob.download_as_string())
 
   def put_dashboard_data(self, dashboard_data: Dict) -> None:
     """Put dashboard data in bucket."""
-    self.blob.upload_from_string(json.dumps(dashboard_data))
+    today = date.today()
+    blob = self.bucket.blob(str(today) + '-dashboard-data.json')
+    blob.upload_from_string(json.dumps(dashboard_data))
 
   def update_dashboard(self,
                        games: List[Dict],
