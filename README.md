@@ -11,7 +11,7 @@ The dashboard is a combination of three google Cloud Run services.
 - `data-pipeline` gets game results, processes the data, and updates the json file. It also calls the model API, trains the model, and incorporates a forecast into the dashboard data. It is triggered each morning by Cloud Scheduler.
 - `model` is an API for forecasting. It has two methods: 
   - `train` uses game results to update the model. The model is trained in an online fashion.
-  - `forecast` uses Monte Carlo simulation to prediction results of upcoming games.
+  - `forecast` uses Monte Carlo simulation to predict results of upcoming games.
 
 ## Data
 
