@@ -32,7 +32,7 @@ def make_request(method: str=None, data: Dict=None):
     print(endpoint, method)
     url = os.path.join(endpoint, method)
   else:
-  	url = endpoint # in this case we just ping the API.
+    url = endpoint # in this case we just ping the API.
 
   # get id token for request
   auth_req = google.auth.transport.requests.Request()
