@@ -14,11 +14,6 @@ The dashboard is a combination of three google Cloud Run services.
   - `forecast` uses Monte Carlo simulation to predict results of upcoming games.
 
 ```mermaid
-  graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
   graph LR
     A[dashboard] -- GET --> B[dashboard-data.json]
     C[data-pipeline] -- PUT --> B
