@@ -19,7 +19,9 @@ We use Assumed Density Filtering as described in [1, Section 18.5.3] to approxim
 More specifically, our model follows the algorithm described in [1, Section 18.5.3.2] which describes Gaussian approximate for online inference in generalized linear models in detail.
 
 The transition probability distribution for the update step in this algorithm is given by
-$$ p(\theta_{i,t} \mid \theta_{i,t-1}) = N(\theta_{i,t} ; \theta_{i,t-1} , k)$$
+
+$$ p(\theta_{i,t} \mid \theta_{i, t-1}) = N(\theta_{i,t} \mid \theta_{i,t-1} , k)$$
+
 where $k$ is a hyperparameter which plays a role similar to the learning rate.
 
 
@@ -32,3 +34,4 @@ where $k$ is a hyperparameter which plays a role similar to the learning rate.
 ## References
 
 [1] Murphey. Machine Learning: a Probabilistic Perspective. 2nd Ed.
+[2] 
