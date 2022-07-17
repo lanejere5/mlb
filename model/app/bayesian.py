@@ -71,7 +71,7 @@ class BayesianLogisticRegressionWithADF(Model):
     p = np_sigmoid(s)
     likelihood = p ** result + (1 - p) ** (1 - result)
 
-    z = np.mean()
+    z = np.mean(likelihood)
     post_s_mean = np.mean(s * likelihood) / z
     post_s_var = np.mean((s ** 2) * likelihood) / z - (post_s_mean ** 2)
 
