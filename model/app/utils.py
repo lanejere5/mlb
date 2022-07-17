@@ -1,6 +1,7 @@
 # utils.py
 """Utils."""
 import pickle
+import numpy as np
 from math import exp
 from typing import Dict
 
@@ -13,6 +14,14 @@ def sigmoid(x: float):
     return 1 / (1 + exp(-x))
   else:
     return exp(x) / (1 + exp(x))
+
+def np_sigmoid(x: np.ndarray) -> np.ndarray:
+  """Numerically stable sigmoid."""
+  return np.where(
+    x >= 0, 
+    1 / (1 + np.exp(-x)), 
+    np.exp(x) / (1 + np.exp(x))
+  )
 
 def load_parameters(bucket_name: str) -> Dict:
   """Load model parameters from storage."""
@@ -27,8 +36,11 @@ def load_parameters(bucket_name: str) -> Dict:
 
   pkl = blob.download_as_string()
   params = pickle.loads(pkl)
+
+  # log to console
   print("Loaded params:")
   print(params)
+  
   return params
 
 def save_parameters(bucket_name: str, params) -> None:
@@ -42,6 +54,7 @@ def save_parameters(bucket_name: str, params) -> None:
   pkl = pickle.dumps(params)
   blob.upload_from_string(pkl)
 
+  # log to console
   print("Saved params:")
   print(params)
   return
