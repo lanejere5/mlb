@@ -20,6 +20,7 @@ The dashboard is a combination of three google Cloud Run services.
     C -- GET --> D((MLB statsAPI))
     C -- POST --> E[model]
     E -- GET / PUT --> F[params.pkl]
+    G[Cloud scheduler] -- GET --> C
 ```
 
 ## Data
