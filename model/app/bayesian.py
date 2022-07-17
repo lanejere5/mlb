@@ -83,6 +83,6 @@ class BayesianLogisticRegressionWithADF(Model):
     a_v = - self.params['a'] * sqrt(var_v) / s_var
     self.params['mu'][h] = mu_h + a_h * delta_mean
     self.params['mu'][v] = mu_v + a_v * delta_mean
-    self.params['var'][h] = var_h + (a_h ** 2) * delta_var
-    self.params['var'][v] = var_v + (a_v ** 2) * delta_var
+    self.params['var'][h] = (sqrt(var_h) + (a_h ** 2) * delta_var) ** 2
+    self.params['var'][v] = (sqrt(var_v) + (a_v ** 2) * delta_var) ** 2
     return
