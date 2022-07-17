@@ -1,6 +1,5 @@
 # elo.py
 """Simple ELO model."""
-import os
 from typing import Dict
 # from dataclasses import dataclass
 

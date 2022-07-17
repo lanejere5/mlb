@@ -16,7 +16,7 @@ def sigmoid(x: float):
     return exp(x) / (1 + exp(x))
 
 def np_sigmoid(x: np.ndarray) -> np.ndarray:
-  """Numerically stable sigmoid."""
+  """Numerically stable element-wise sigmoid for numpy arrays."""
   return np.where(
     x >= 0, 
     1 / (1 + np.exp(-x)), 

@@ -5,8 +5,8 @@ from typing import Dict
 import numpy as np
 from math import sqrt
 
-from .model import Model
-from .utils import np_sigmoid
+from model import Model
+from utils import np_sigmoid
 
 class BayesianLogisticRegressionWithADF(Model):
   """Bayesian Logistic Regression with Assumed Density Filtering.
