@@ -13,6 +13,14 @@ The dashboard is a combination of three google Cloud Run services.
   - `train` uses game results to update the model. The model is trained in an online fashion.
   - `forecast` uses Monte Carlo simulation to predict results of upcoming games.
 
+```mermaid
+  graph TD;
+      A-->B;
+      A-->C;
+      B-->D;
+      C-->D;
+```
+
 ## Data
 
 [Data sources](https://github.com/lanej5/mlb/blob/main/data.md)
