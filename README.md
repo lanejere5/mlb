@@ -18,9 +18,9 @@ The dashboard is a combination of three google Cloud Run services.
     A[dashboard] -- GET --> B[dashboard-data.json]
     C[data-pipeline] -- PUT --> B
     C -- GET --> D((mlb statsapi))
-    C -- POST --> E[model]
+    C -- train / forecast --> E[model]
     E -- GET / PUT --> F[params.pkl]
-    G[Cloud scheduler] -- GET --> C
+    G[Cloud scheduler] -- invoke --> C
 ```
 
 ## Data
