@@ -68,8 +68,10 @@ class BayesianLogisticRegressionWithADF(Model):
 
     # use monte-carlo to 
     # estimate posterior mean and variance of log-odds
-    likelihood = np_sigmoid(s)
-    z = np.mean(likelihood)
+    p = np_sigmoid(s)
+    likelihood = p ** result + (1 - p) ** (1 - result)
+
+    z = np.mean()
     post_s_mean = np.mean(s * likelihood) / z
     post_s_var = np.mean((s ** 2) * likelihood) / z - (post_s_mean ** 2)
 

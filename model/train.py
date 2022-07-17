@@ -3,11 +3,64 @@
 import urllib.request
 import json
 import pickle
+import argparse
 from datetime import datetime, date, timedelta
 from typing import Dict, Tuple, List
 
 from app.elo import ELO
+from app.bayesian import BayesianLogisticRegressionWithADF
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("model", help="model name", type=str)
+
+team_abbr_map = {
+	"ANA": 0,
+	"LAA": 0,
+	"BAL": 1,
+	"BOS": 2,
+	"CHA": 3,
+	"CHW": 3,
+	"CLE": 4,
+	"DET": 5,
+	"HOU": 6,
+	"KCA": 7,
+	"KCR": 7,
+	"MIN": 8,
+	"NYA": 9,
+	"NYY": 9,
+	"OAK": 10,
+	"SEA": 11,
+	"TBA": 12,
+	"TBR": 12,
+	"TEX": 13,
+	"TOR": 14,
+	"ARI": 15,
+	"ATL": 16,
+	"CHN": 17,
+	"CHC": 17,
+	"CIN": 18,
+	"COL": 19,
+	"LAN": 20,
+	"LAD": 20,
+	"SDN": 21,
+	"SDP": 21,
+	"MIA": 22,
+	"MIL": 23,
+	"NYN": 24,
+	"NYM": 24,
+	"PHI": 25,
+	"PIT": 26,
+	"SFN": 27,
+	"SFG": 27,
+	"SLN": 28,
+	"STL": 28,
+	"WAS": 29,
+	"WSN": 29,
+	"MON": 29,
+	"CAL": 0,
+	"FLO": 22
+}
 
 team_name_abbr = {
   'New York Yankees': 'NYY',
@@ -88,62 +141,31 @@ def get_game_results(day: date) -> Tuple[List[Dict], List[int]]:
 
 if __name__ == '__main__':
 
-	# initialize the model
-	params = {
-		'rating': 30 * [0],
-		'a': 0.0025,
-		'b': 0.152,
-		'k': 4,
-		'map': {
-			"ANA": 0,
-			"LAA": 0,
-			"BAL": 1,
-			"BOS": 2,
-			"CHA": 3,
-			"CHW": 3,
-			"CLE": 4,
-			"DET": 5,
-			"HOU": 6,
-			"KCA": 7,
-			"KCR": 7,
-			"MIN": 8,
-			"NYA": 9,
-			"NYY": 9,
-			"OAK": 10,
-			"SEA": 11,
-			"TBA": 12,
-			"TBR": 12,
-			"TEX": 13,
-			"TOR": 14,
-			"ARI": 15,
-			"ATL": 16,
-			"CHN": 17,
-			"CHC": 17,
-			"CIN": 18,
-			"COL": 19,
-			"LAN": 20,
-			"LAD": 20,
-			"SDN": 21,
-			"SDP": 21,
-			"MIA": 22,
-			"MIL": 23,
-			"NYN": 24,
-			"NYM": 24,
-			"PHI": 25,
-			"PIT": 26,
-			"SFN": 27,
-			"SFG": 27,
-			"SLN": 28,
-			"STL": 28,
-			"WAS": 29,
-			"WSN": 29,
-			"MON": 29,
-			"CAL": 0,
-			"FLO": 22
-        },
-		"date": "2022-07-12"
-	}
-	model = ELO(params)
+	args = parser.parse_args()
+  
+	if args.model == 'elo':
+		# initialize the elo model
+		params = {
+			'rating': 30 * [0],
+			'a': 0.0025,
+			'b': 0.152,
+			'k': 4,
+			'map': team_abbr_map,
+			"date": "2022-07-17"
+		}
+		model = ELO(params)
+	elif args.model == 'bayesian':
+		# initialize the elo model
+		params = {
+			'mu': 30 * [0],
+			'var': 30 * [10],
+			'a': 0.0025,
+			'b': 0.152,
+			'k': 4,
+			'map': team_abbr_map,
+			"date": "2022-07-17"
+		}
+		model = BayesianLogisticRegressionWithADF(params)
 
 	# start and end dates
 	day = datetime(2022, 4, 7).date()
