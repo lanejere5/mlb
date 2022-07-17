@@ -15,12 +15,12 @@ The dashboard is a combination of three google Cloud Run services.
 
 ```mermaid
   graph LR
-    A[dashboard] -- GET --> B[dashboard-data.json]
+    A[dashboard] -- GET --> B(dashboard-data.json)
     C[data-pipeline] -- PUT --> B
     C -- GET --> D((mlb statsapi))
     C -- train / forecast --> E[model]
-    E -- GET / PUT --> F[params.pkl]
-    G[Cloud scheduler] -- invoke --> C
+    E -- GET / PUT --> F(params.pkl)
+    G(Cloud scheduler) -- invoke --> C
 ```
 
 ## Data
