@@ -3,7 +3,6 @@
 from typing import Dict
 
 import numpy as np
-from math import sqrt
 
 from model import Model
 from utils import np_sigmoid
@@ -78,11 +77,12 @@ class BayesianLogisticRegressionWithADF(Model):
     delta_mean = post_s_mean - s_mean
     delta_var = post_s_var - s_var
 
-    # update model parameters
-    a_h = self.params['a'] * sqrt(var_h) / s_var
-    a_v = - self.params['a'] * sqrt(var_v) / s_var
+    # update model parameters (eq 18.126 - 18.129)
+    denom = self.params['a'] *  (var_h ** 2 + var_v ** 2)
+    a_h = var_h / denom
+    a_v = - var_v / denom
     self.params['mu'][h] = mu_h + a_h * delta_mean
     self.params['mu'][v] = mu_v + a_v * delta_mean
-    self.params['var'][h] = (sqrt(var_h) + (a_h ** 2) * delta_var) ** 2
-    self.params['var'][v] = (sqrt(var_v) + (a_v ** 2) * delta_var) ** 2
+    self.params['var'][h] = var_h + (a_h ** 2) * delta_var
+    self.params['var'][v] = var_v + (a_v ** 2) * delta_var
     return
