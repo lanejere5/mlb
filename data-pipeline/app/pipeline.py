@@ -115,11 +115,12 @@ class Pipeline():
 
     games = []
     results = []
-    for game in data['dates'][0]['games']:
-      parsed_game, result = self.parse_game_results(game)
-      if (parsed_game is not None) and (result is not None):
-        games.append(parsed_game)
-        results.append(result)
+    if len(data['dates']) > 0:
+      for game in data['dates'][0]['games']:
+        parsed_game, result = self.parse_game_results(game)
+        if (parsed_game is not None) and (result is not None):
+          games.append(parsed_game)
+          results.append(result)
 
     return games, results
 
@@ -293,9 +294,10 @@ class Pipeline():
     games, results = self.get_game_results(date.today() - timedelta(days=1))
 
     # 2. train the models
-    print("Training models...")
-    model_names = ['elo']
-    self.train_models(model_names, games, results)
+    if games:
+      print("Training models...")
+      model_names = ['elo']
+      self.train_models(model_names, games, results)
 
     # 3 - 4. forecast next 30 days
     print("Retrieving schedule...")
