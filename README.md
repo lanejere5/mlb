@@ -2,8 +2,6 @@
 
 I'm a big baseball fan so I made a dashboard for visualizing the MLB postseason race.
 
-[Click here to see it in action!](https://dashboard-5odpqk6ypq-ue.a.run.app/)
-
 ## Architecture
 
 The dashboard is a combination of three google Cloud Run services.
